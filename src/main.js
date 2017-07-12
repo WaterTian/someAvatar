@@ -6,6 +6,7 @@ var avatarScale = 0.6;
 var avatar, skeletonHelper;
 var skyBox;
 var ground;
+var snows = [];
 
 var composer;
 
@@ -59,13 +60,17 @@ function init() {
 	camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 10, 20000);
 	camera.position.set(0, Floor + 200, 500);
 	scene.add(camera);
-	controls = new TY.TYOrbitControls(camera, renderer.domElement);
+
+	controls = new THREE.TyOrbitControls(camera, renderer.domElement);
 	// controls.autoRotate = true;
 	controls.target.set(0, Floor + 60, 0);
 	// controls.minDistance = 100;
 	// controls.maxDistance = 1000;
 	controls.update();
 
+
+	TY.ThreeContainer = new THREE.Group();
+	scene.add(TY.ThreeContainer);
 
 
 	window.addEventListener('resize', onWindowResize, false);
@@ -78,6 +83,7 @@ function init() {
 	initSky();
 	initGround();
 	initTrees();
+	initSnows();
 
 	//Load Model
 	loadModel('assets/models/model.js');
@@ -90,7 +96,7 @@ function init() {
 	var FilmEffect = new THREE.FilmPass();
 	FilmEffect.renderToScreen = true;
 	composer.addPass(FilmEffect);
-	var TextureEffect = new THREE.TexturePass(new THREE.TextureLoader().load('assets/img/vignette.png'),0.9);
+	var TextureEffect = new THREE.TexturePass(new THREE.TextureLoader().load('assets/img/vignette.png'), 0.9);
 	TextureEffect.renderToScreen = true;
 	composer.addPass(TextureEffect);
 }
@@ -107,7 +113,7 @@ function initSky() {
 
 	skyBox = new THREE.Mesh(geometry, material);
 	skyBox.applyMatrix(new THREE.Matrix4().makeScale(1, 1, -1));
-	scene.add(skyBox);
+	TY.ThreeContainer.add(skyBox);
 
 	material.transparent = true;
 	material.opacity = 0;
@@ -140,9 +146,8 @@ function initGround() {
 		var data = getImgData(texture.image, _w, _h);
 
 		var material = new THREE.MeshBasicMaterial({
-			color: 0x0f2e2b,
-			map: texture,
-			normalMap: new THREE.TextureLoader().load("assets/img/normal.jpg")
+			color: 0x1e8a72,
+			map: texture
 		});
 
 		var geometry = new THREE.PlaneBufferGeometry(2000, 2000, _w - 1, _h - 1);
@@ -154,7 +159,7 @@ function initGround() {
 		ground = new THREE.Mesh(geometry, material);
 		ground.position.set(0, Floor - 30, 0);
 		// ground.receiveShadow = true;
-		scene.add(ground);
+		TY.ThreeContainer.add(ground);
 
 
 		// MIRROR planes
@@ -165,7 +170,7 @@ function initGround() {
 		});
 		groundMirror.rotateX(-Math.PI / 2);
 		groundMirror.position.set(0, Floor, 0);
-		scene.add(groundMirror);
+		TY.ThreeContainer.add(groundMirror);
 
 	});
 
@@ -206,13 +211,64 @@ function initTrees() {
 		if (Math.abs(_x) > 100 && Math.abs(_z) > 100) {
 			var _r = Math.random() + 1;
 			var _rotation = (Math.random() - 0.5) * 0.2;
-			var geometry = new THREE.CylinderGeometry(2, 20 * _r, 2000* _r, 10, 4);
+			var geometry = new THREE.CylinderGeometry(2, 20 * _r, 2000 * _r, 10, 4);
 			var object = new THREE.Mesh(geometry, material);
 			object.position.set(_x, 500, _z);
 			object.rotation.set(_rotation, _rotation, 0);
-			scene.add(object);
+			TY.ThreeContainer.add(object);
 		}
 	}
+}
+
+
+function initSnows() {
+	var textureLoader = new THREE.TextureLoader();
+	var geometry = new THREE.Geometry();
+	var materials = [];
+	var sprites = [];
+	sprites.push(textureLoader.load("assets/img//sprites/snowflake1.png"));
+	sprites.push(textureLoader.load("assets/img//sprites/snowflake2.png"));
+	sprites.push(textureLoader.load("assets/img//sprites/snowflake3.png"));
+	sprites.push(textureLoader.load("assets/img//sprites/snowflake4.png"));
+	sprites.push(textureLoader.load("assets/img//sprites/snowflake5.png"));
+
+
+	for (i = 0; i < 2000; i++) {
+		var vertex = new THREE.Vector3();
+		vertex.x = Math.random() * 2000 - 1000;
+		vertex.y = Math.random() * 2000 - 1000;
+		vertex.z = Math.random() * 2000 - 1000;
+		geometry.vertices.push(vertex);
+	}
+
+	for (i = 0; i < 5; i++) {
+		var sprite = sprites[i];
+		materials[i] = new THREE.PointsMaterial({
+			size: 6,
+			map: sprite,
+			blending: THREE.AdditiveBlending,
+			depthTest: false,
+			transparent: true,
+			opacity: 0.6
+		});
+
+		var particles = new THREE.Points(geometry, materials[i]);
+		particles.rotation.x = Math.random() * 6;
+		particles.rotation.y = Math.random() * 6;
+		particles.rotation.z = Math.random() * 6;
+		
+		snows.push(particles);
+		TY.ThreeContainer.add(particles);
+	}
+
+}
+
+function updateSnows() {
+	var time = Date.now() * 0.00003;
+	for (var i = snows.length - 1; i >= 0; i--) {
+		snows[i].rotation.y = time * (i < 4 ? i + 1 : -(i + 1));
+	}
+
 }
 
 
@@ -254,7 +310,7 @@ function createModel(geometry) {
 	avatar = new TY.Avatar(geometry, materialTexture);
 	avatar.position.set(0, Floor, 0);
 	avatar.scale.set(avatarScale, avatarScale, avatarScale);
-	scene.add(avatar);
+	TY.ThreeContainer.add(avatar);
 	avatar.castShadow = true;
 	avatar.receiveShadow = true;
 
@@ -326,6 +382,7 @@ function animate() {
 
 	render();
 	if (stats) stats.update();
+	updateSnows();
 }
 
 function render() {
