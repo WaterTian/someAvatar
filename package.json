@@ -1,0 +1,26 @@
+{
+	"name": "someAvatar",
+    "version": "0.0.1",
+    "author": "WaterTian",
+	"devDependencies": {
+		"grunt": "^1.0.1",
+		"grunt-contrib-concat": "^1.0.1",
+		"grunt-contrib-uglify": "^2.0.0"
+	},
+	"libs": [
+	    "libs/three.min.js",
+	    "libs/TweenMax.min.js",
+	    "libs/soundjs-0.6.2.min.js",
+	    "libs/stats.min.js"
+	],
+	"main": [
+		"src/core/TY.js",
+		"src/core/utils.js",
+		"src/core/EventDispatcher.js",
+	    "src/controls/TYOrbitControls.js",
+	    "src/controls/fastclick.js",
+		"src/H5Sound.js",
+		"src/Avatar.js",
+		"src/main.js"
+	]
+}
