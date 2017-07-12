@@ -7,6 +7,8 @@ var avatar, skeletonHelper;
 var skyBox;
 var ground;
 
+var composer;
+
 var clock = new THREE.Clock();
 
 var Floor = -300;
@@ -28,11 +30,13 @@ function init() {
 
 
 	//light
-	var ambient = new THREE.AmbientLight(0x666666);
+	var ambient = new THREE.AmbientLight(0x888888, 1);
 	scene.add(ambient);
-	var directionalLight = new THREE.DirectionalLight(0x887766);
-	directionalLight.position.set(-1, 1, 1).normalize();
-	scene.add(directionalLight);
+	var dirLight = new THREE.DirectionalLight(0xcccccc, 1);
+	dirLight.color.setHSL(0.1, 1, 0.95);
+	dirLight.position.set(1, 1.75, 1);
+	dirLight.position.multiplyScalar(50);
+	scene.add(dirLight);
 
 
 	// RENDERER
@@ -42,7 +46,7 @@ function init() {
 
 	renderer.setPixelRatio(window.devicePixelRatio);
 	renderer.setSize(window.innerWidth, window.innerHeight);
-	renderer.setClearColor(new THREE.Color(0xffffff));
+	// renderer.setClearColor(new THREE.Color(0xffffff));
 	container.appendChild(renderer.domElement);
 
 	renderer.gammaInput = true;
@@ -57,10 +61,11 @@ function init() {
 	scene.add(camera);
 	controls = new TY.TYOrbitControls(camera, renderer.domElement);
 	// controls.autoRotate = true;
-	controls.target.set(0, Floor+100, 0);
+	controls.target.set(0, Floor + 60, 0);
 	// controls.minDistance = 100;
 	// controls.maxDistance = 1000;
 	controls.update();
+
 
 
 	window.addEventListener('resize', onWindowResize, false);
@@ -72,10 +77,22 @@ function init() {
 
 	initSky();
 	initGround();
-	// initTrees();
+	initTrees();
 
 	//Load Model
 	loadModel('assets/models/model.js');
+
+
+	// postprocessing
+	composer = new THREE.EffectComposer(renderer);
+	composer.addPass(new THREE.RenderPass(scene, camera));
+
+	var FilmEffect = new THREE.FilmPass();
+	FilmEffect.renderToScreen = true;
+	composer.addPass(FilmEffect);
+	var TextureEffect = new THREE.TexturePass(new THREE.TextureLoader().load('assets/img/vignette.png'),0.9);
+	TextureEffect.renderToScreen = true;
+	composer.addPass(TextureEffect);
 }
 
 
@@ -122,10 +139,8 @@ function initGround() {
 		var _h = texture.image.height;
 		var data = getImgData(texture.image, _w, _h);
 
-		var material = new THREE.MeshStandardMaterial({
-			color: 0x00ffff,
-			metalness: 0.9,
-			roughness: 0.8,
+		var material = new THREE.MeshBasicMaterial({
+			color: 0x0f2e2b,
 			map: texture,
 			normalMap: new THREE.TextureLoader().load("assets/img/normal.jpg")
 		});
@@ -134,10 +149,10 @@ function initGround() {
 		geometry.rotateX(-Math.PI / 2);
 		var vertices = geometry.attributes.position.array;
 		for (var i = 0, j = 0, l = data.length; i < l; i += 4, j += 3) {
-			vertices[j + 1] = data[i];
+			vertices[j + 1] = data[i] * 0.6;
 		}
 		ground = new THREE.Mesh(geometry, material);
-		ground.position.set(0, Floor - 50, 0);
+		ground.position.set(0, Floor - 30, 0);
 		// ground.receiveShadow = true;
 		scene.add(ground);
 
@@ -178,21 +193,25 @@ function initTrees() {
 	texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
 	texture.repeat.set(1, 10);
 	var material = new THREE.MeshPhongMaterial({
-		color: 0x004444,
+		color: 0x0f2e2b,
 		map: texture
 	});
 
 
 
-	for (var i = 0; i < 20; i++) {
-		var _r = Math.random() + 1;
-		var geometry = new THREE.CylinderGeometry(2, 10 * _r, 1600, 10, 4);
-		var object = new THREE.Mesh(geometry, material);
+	for (var i = 0; i < 70; i++) {
 
-		var _x = (Math.random() - 0.5) * 1000;
-		var _z = (Math.random() - 0.5) * 1000;
-		object.position.set(_x, 500, _z);
-		scene.add(object);
+		var _x = (Math.random() - 0.5) * 3000;
+		var _z = (Math.random() - 0.5) * 3000;
+		if (Math.abs(_x) > 100 && Math.abs(_z) > 100) {
+			var _r = Math.random() + 1;
+			var _rotation = (Math.random() - 0.5) * 0.2;
+			var geometry = new THREE.CylinderGeometry(2, 20 * _r, 2000* _r, 10, 4);
+			var object = new THREE.Mesh(geometry, material);
+			object.position.set(_x, 500, _z);
+			object.rotation.set(_rotation, _rotation, 0);
+			scene.add(object);
+		}
 	}
 }
 
@@ -312,5 +331,7 @@ function animate() {
 function render() {
 	var delta = clock.getDelta();
 	if (avatar) avatar.update(delta);
+
 	renderer.render(scene, camera);
+	if (composer) composer.render(delta);
 }
