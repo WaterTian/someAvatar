@@ -77,3 +77,20 @@ TY.getTexturesFromAtlasFile = function(atlasImgUrl, tilesNum) {
 	imageObj.src = atlasImgUrl;
 	return textures;
 }
+
+
+
+TY.getImgData = function(_image, _w, _h) {
+	var imgCanvas = document.createElement('canvas');
+	imgCanvas.style.display = "block";
+	imgCanvas.id = "imgCanvas";
+	document.body.appendChild(imgCanvas);
+	imgCanvas.width = _w;
+	imgCanvas.height = _h;
+	var imgContext = imgCanvas.getContext("2d");
+	imgContext.drawImage(_image, 0, 0, _w, _h, 0, 0, _w, _h);
+	imgContext.restore();
+	var imgData = imgContext.getImageData(0, 0, _w, _h);
+	document.body.removeChild(imgCanvas);
+	return imgData.data;
+}

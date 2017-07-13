@@ -2,15 +2,19 @@ var container, stats;
 
 var camera, scene, renderer;
 
+var cubeCamera;
+var L1;
+
 var avatarScale = 0.6;
 var avatar, skeletonHelper;
 var skyBox;
 var ground;
-var snows = [];
+var snows;
 
 var composer;
 
 var clock = new THREE.Clock();
+var start = Date.now();
 
 var Floor = -300;
 
@@ -56,6 +60,11 @@ function init() {
 
 	FastClick.attach(document.body);
 
+	// CUBE CAMERA
+	cubeCamera = new THREE.CubeCamera(1, 10000, 128);
+	cubeCamera.position.set(0, Floor / 2, 0);
+	scene.add(cubeCamera);
+
 	///// controls, camera
 	camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 10, 20000);
 	camera.position.set(0, Floor + 200, 500);
@@ -64,8 +73,10 @@ function init() {
 	controls = new THREE.TyOrbitControls(camera, renderer.domElement);
 	// controls.autoRotate = true;
 	controls.target.set(0, Floor + 60, 0);
-	// controls.minDistance = 100;
-	// controls.maxDistance = 1000;
+	controls.minDistance = 100;
+	controls.maxDistance = 1500;
+	controls.minPolarAngle = Math.PI * 0.2;
+	controls.maxPolarAngle = Math.PI * 0.48;
 	controls.update();
 
 
@@ -84,9 +95,10 @@ function init() {
 	initGround();
 	initTrees();
 	initSnows();
+	initLight();
 
 	//Load Model
-	loadModel('assets/models/model.js');
+	// loadModel('assets/models/model.js');
 
 
 	// postprocessing
@@ -143,7 +155,7 @@ function initGround() {
 	var texture = new THREE.TextureLoader().load('assets/img/height.jpg', function() {
 		var _w = texture.image.width;
 		var _h = texture.image.height;
-		var data = getImgData(texture.image, _w, _h);
+		var data = TY.getImgData(texture.image, _w, _h);
 
 		var material = new THREE.MeshBasicMaterial({
 			color: 0x1e8a72,
@@ -177,21 +189,6 @@ function initGround() {
 }
 
 
-function getImgData(_image, _w, _h) {
-	var imgCanvas = document.createElement('canvas');
-	imgCanvas.style.display = "block";
-	imgCanvas.id = "imgCanvas";
-	document.body.appendChild(imgCanvas);
-	imgCanvas.width = _w;
-	imgCanvas.height = _h;
-	var imgContext = imgCanvas.getContext("2d");
-	imgContext.drawImage(_image, 0, 0, _w, _h, 0, 0, _w, _h);
-	imgContext.restore();
-	var imgData = imgContext.getImageData(0, 0, _w, _h);
-	document.body.removeChild(imgCanvas);
-	return imgData.data;
-}
-
 
 function initTrees() {
 	var texture = new THREE.TextureLoader().load('assets/img/tree.jpg');
@@ -201,11 +198,7 @@ function initTrees() {
 		color: 0x0f2e2b,
 		map: texture
 	});
-
-
-
 	for (var i = 0; i < 70; i++) {
-
 		var _x = (Math.random() - 0.5) * 3000;
 		var _z = (Math.random() - 0.5) * 3000;
 		if (Math.abs(_x) > 100 && Math.abs(_z) > 100) {
@@ -222,55 +215,15 @@ function initTrees() {
 
 
 function initSnows() {
-	var textureLoader = new THREE.TextureLoader();
-	var geometry = new THREE.Geometry();
-	var materials = [];
-	var sprites = [];
-	sprites.push(textureLoader.load("assets/img//sprites/snowflake1.png"));
-	sprites.push(textureLoader.load("assets/img//sprites/snowflake2.png"));
-	sprites.push(textureLoader.load("assets/img//sprites/snowflake3.png"));
-	sprites.push(textureLoader.load("assets/img//sprites/snowflake4.png"));
-	sprites.push(textureLoader.load("assets/img//sprites/snowflake5.png"));
-
-
-	for (i = 0; i < 2000; i++) {
-		var vertex = new THREE.Vector3();
-		vertex.x = Math.random() * 2000 - 1000;
-		vertex.y = Math.random() * 2000 - 1000;
-		vertex.z = Math.random() * 2000 - 1000;
-		geometry.vertices.push(vertex);
-	}
-
-	for (i = 0; i < 5; i++) {
-		var sprite = sprites[i];
-		materials[i] = new THREE.PointsMaterial({
-			size: 6,
-			map: sprite,
-			blending: THREE.AdditiveBlending,
-			depthTest: false,
-			transparent: true,
-			opacity: 0.6
-		});
-
-		var particles = new THREE.Points(geometry, materials[i]);
-		particles.rotation.x = Math.random() * 6;
-		particles.rotation.y = Math.random() * 6;
-		particles.rotation.z = Math.random() * 6;
-		
-		snows.push(particles);
-		TY.ThreeContainer.add(particles);
-	}
-
+	snows = new TY.Snows();
+	TY.ThreeContainer.add(snows);
 }
 
-function updateSnows() {
-	var time = Date.now() * 0.00003;
-	for (var i = snows.length - 1; i >= 0; i--) {
-		snows[i].rotation.y = time * (i < 4 ? i + 1 : -(i + 1));
-	}
-
+function initLight() {
+	L1 = new TY.Light2(new THREE.IcosahedronGeometry(40, 3));
+	L1.position.set(0, Floor+100, 0);
+	scene.add(L1);
 }
-
 
 
 function loadModel(url) {
@@ -306,8 +259,13 @@ function createModel(geometry) {
 		skinning: true
 	});
 
+	var materialPhongCube = new THREE.MeshPhongMaterial({
+		envMap: cubeCamera.renderTarget.texture,
+		skinning: true
+	});
+
 	//Avatar
-	avatar = new TY.Avatar(geometry, materialTexture);
+	avatar = new TY.Avatar(geometry, materialPhongCube);
 	avatar.position.set(0, Floor, 0);
 	avatar.scale.set(avatarScale, avatarScale, avatarScale);
 	TY.ThreeContainer.add(avatar);
@@ -382,12 +340,15 @@ function animate() {
 
 	render();
 	if (stats) stats.update();
-	updateSnows();
+	if (snows) snows.update();
+	if (L1) L1.update();
 }
 
 function render() {
 	var delta = clock.getDelta();
 	if (avatar) avatar.update(delta);
+
+	cubeCamera.updateCubeMap(renderer, scene);
 
 	renderer.render(scene, camera);
 	if (composer) composer.render(delta);
