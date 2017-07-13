@@ -696,66 +696,24 @@ THREE.TyOrbitControls = function(object, domElement) {
 
 	}
 
-	function handleTouchStartRotate(event) {
-		//console.log( 'handleTouchStartRotate' );
-		rotateStart.set(event.touches[0].pageX, event.touches[0].pageY);
+
+	function handleTouchStartDolly(event) {
+		dollyStart.set(event.touches[0].pageX, event.touches[0].pageY);
 		//tyadd
 		scope.startTouchPoint.set(event.touches[0].pageX, event.touches[0].pageY);
 		scope.moveTouchPoint.set(0, 0);
 	}
 
-	function handleTouchStartDolly(event) {
-
-		//console.log( 'handleTouchStartDolly' );
-
-		var dx = event.touches[0].pageX - event.touches[1].pageX;
-		var dy = event.touches[0].pageY - event.touches[1].pageY;
-
-		var distance = Math.sqrt(dx * dx + dy * dy);
-
-		dollyStart.set(0, distance);
-
-	}
-
 	function handleTouchStartPan(event) {
 
 		//console.log( 'handleTouchStartPan' );
-
 		panStart.set(event.touches[0].pageX, event.touches[0].pageY);
-
-	}
-
-	function handleTouchMoveRotate(event) {
-
-		//console.log( 'handleTouchMoveRotate' );
-
-		rotateEnd.set(event.touches[0].pageX, event.touches[0].pageY);
-		rotateDelta.subVectors(rotateEnd, rotateStart);
-
-		var element = scope.domElement === document ? scope.domElement.body : scope.domElement;
-
-		// rotating across whole screen goes 360 degrees around
-		rotateLeft(2 * Math.PI * rotateDelta.x / element.clientWidth * scope.rotateSpeed);
-
-		// rotating up and down along whole screen attempts to go 360, but limited to 180
-		rotateUp(2 * Math.PI * rotateDelta.y / element.clientHeight * scope.rotateSpeed);
-
-		rotateStart.copy(rotateEnd);
-
-		scope.update();
 
 	}
 
 	function handleTouchMoveDolly(event) {
 
-		//console.log( 'handleTouchMoveDolly' );
-
-		var dx = event.touches[0].pageX - event.touches[1].pageX;
-		var dy = event.touches[0].pageY - event.touches[1].pageY;
-
-		var distance = Math.sqrt(dx * dx + dy * dy);
-
-		dollyEnd.set(0, distance);
+		dollyEnd.set(event.touches[0].pageX, event.touches[0].pageY);
 
 		dollyDelta.subVectors(dollyEnd, dollyStart);
 
@@ -919,29 +877,9 @@ THREE.TyOrbitControls = function(object, domElement) {
 
 				if (scope.enableRotate === false) return;
 
-				handleTouchStartRotate(event);
-
-				state = STATE.TOUCH_ROTATE;
-
-				break;
-
-			case 2: // two-fingered touch: dolly
-
-				if (scope.enableZoom === false) return;
-
 				handleTouchStartDolly(event);
 
 				state = STATE.TOUCH_DOLLY;
-
-				break;
-
-			case 3: // three-fingered touch: pan
-
-				if (scope.enablePan === false) return;
-
-				handleTouchStartPan(event);
-
-				state = STATE.TOUCH_PAN;
 
 				break;
 
@@ -970,31 +908,11 @@ THREE.TyOrbitControls = function(object, domElement) {
 
 			case 1: // one-fingered touch: rotate
 
-				if (scope.enableRotate === false) return;
-				if (state !== STATE.TOUCH_ROTATE) return; // is this needed?...
-
-				handleTouchMoveRotate(event);
-
-				break;
-
-			case 2: // two-fingered touch: dolly
-
 				if (scope.enableZoom === false) return;
 				if (state !== STATE.TOUCH_DOLLY) return; // is this needed?...
 
 				handleTouchMoveDolly(event);
-
 				break;
-
-			case 3: // three-fingered touch: pan
-
-				if (scope.enablePan === false) return;
-				if (state !== STATE.TOUCH_PAN) return; // is this needed?...
-
-				handleTouchMovePan(event);
-
-				break;
-
 			default:
 
 				state = STATE.NONE;
