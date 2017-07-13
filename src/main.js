@@ -88,7 +88,7 @@ function init() {
 	container.appendChild(stats.dom);
 
 
-	initIntor();
+	intoIntor();
 
 
 	// postprocessing
@@ -104,7 +104,7 @@ function init() {
 }
 
 
-function initIntor() {
+function intoIntor() {
 	initSky();
 	initSnows();
 	L1 = new TY.Light2(new THREE.IcosahedronGeometry(30, 5));
