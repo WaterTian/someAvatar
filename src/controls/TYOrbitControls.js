@@ -132,12 +132,12 @@ THREE.TyOrbitControls = function(object, domElement) {
 	};
 
 	//tyadd
-	this.moveIn = function(callback) {
-		TweenMax.to(scope.object.position, 1, {
-			x: 0,
-			y: 30,
-			z: 120,
-			ease: Strong.easeOut,
+	this.moveIn = function(_x, _y, _z, callback) {
+		TweenMax.to(scope.object.position, 4, {
+			x: _x,
+			y: _y,
+			z: _z,
+			ease: Strong.easeInOut,
 			onUpdate: function() {
 				scope.update();
 			},
@@ -229,7 +229,10 @@ THREE.TyOrbitControls = function(object, domElement) {
 				q0.multiply(q1);
 
 				/////////////////////////////////////////
-				if (TY.ThreeContainer) TY.ThreeContainer.setRotationFromQuaternion(q0);
+				if (TY.ThreeContainer) {
+					TY.ThreeContainer.quaternion.slerp(q0, 0.2);
+					// TY.ThreeContainer.setRotationFromQuaternion(q0);
+				}
 			}
 
 
@@ -326,6 +329,7 @@ THREE.TyOrbitControls = function(object, domElement) {
 		onScreenOrientationChangeEvent(); // run once on load
 		window.addEventListener('orientationchange', onScreenOrientationChangeEvent, false);
 		window.addEventListener('deviceorientation', onDeviceOrientationChangeEvent, false);
+		window.addEventListener('devicemotion', onDeviceMotionHandler, false);
 
 		scope.domElement.addEventListener('contextmenu', onContextMenu, false);
 		scope.domElement.addEventListener('mousedown', onMouseDown, false);
@@ -342,6 +346,7 @@ THREE.TyOrbitControls = function(object, domElement) {
 
 		window.removeEventListener('orientationchange', onScreenOrientationChangeEvent, false);
 		window.removeEventListener('deviceorientation', onDeviceOrientationChangeEvent, false);
+		window.removeEventListener('devicemotion', onDeviceMotionHandler, false);
 
 		scope.domElement.removeEventListener('contextmenu', onContextMenu, false);
 		scope.domElement.removeEventListener('mousedown', onMouseDown, false);
@@ -1016,17 +1021,49 @@ THREE.TyOrbitControls = function(object, domElement) {
 
 	}
 
-
+	// tyadd
 	function onDeviceOrientationChangeEvent(event) {
+		if (scope.enabled === false) return;
 
 		scope.deviceOrientation = event;
 		scope.update();
 	};
-
+	// tyadd
 	function onScreenOrientationChangeEvent() {
+		if (scope.enabled === false) return;
 
 		scope.screenOrientation = window.orientation || 0;
 	};
+	// tyadd
+	var SHAKE_THRESHOLD = 4000;
+	var last_update = 0;
+	var x, y, z, last_x = 0,
+		last_y = 0,
+		last_z = 0;
+	// tyadd
+	function onDeviceMotionHandler(event) {
+		if (scope.enabled === false) return;
+
+		var acceleration = event.accelerationIncludingGravity;
+		var curTime = new Date().getTime();
+		if ((curTime - last_update) > 10) {
+			var diffTime = curTime - last_update;
+			last_update = curTime;
+			x = acceleration.x;
+			y = acceleration.y;
+			z = acceleration.z;
+			var speed = Math.abs(x + y + z - last_x - last_y - last_z) / diffTime * 10000;
+			if (speed > SHAKE_THRESHOLD) {
+				console.log("摇一摇");
+				scope.dispatchEvent({
+					type: 'yao'
+				});
+			}
+			last_x = x;
+			last_y = y;
+			last_z = z;
+		};
+	}
 
 
 	//

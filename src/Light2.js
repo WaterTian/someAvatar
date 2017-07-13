@@ -3,6 +3,8 @@
  */
 TY.Light2 = function(geometry) {
 	var scope = this;
+	this.MoveAble=false;
+	this._t=.0005;
 
 	var panoTexture = new THREE.TextureLoader().load('assets/img/explosion2.png');
 	this.material = new THREE.ShaderMaterial({
@@ -29,7 +31,7 @@ TY.Light2.prototype = Object.assign(Object.create(THREE.Mesh.prototype), TY.Even
 	constructor: TY.Light2,
 
 	update: function(dt) {
-		this.material.uniforms['time'].value = .0005 * (Date.now() - start);
-		this.position.y += Math.sin(.0025 * (Date.now() - start))*0.9;
+		this.material.uniforms['time'].value = this._t * (Date.now() - start);
+		if(this.MoveAble)this.position.y += Math.sin(.0025 * (Date.now() - start))*0.6;
 	}
 });

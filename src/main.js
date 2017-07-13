@@ -5,6 +5,8 @@ var camera, scene, renderer;
 var cubeCamera;
 var L1;
 
+var Step = 0;
+
 var avatarScale = 0.6;
 var avatar, skeletonHelper;
 var skyBox;
@@ -62,21 +64,16 @@ function init() {
 
 	// CUBE CAMERA
 	cubeCamera = new THREE.CubeCamera(1, 10000, 128);
-	cubeCamera.position.set(0, Floor / 2, 0);
+	cubeCamera.position.set(0, Floor + 160, 0);
 	scene.add(cubeCamera);
 
 	///// controls, camera
 	camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 10, 20000);
-	camera.position.set(0, Floor + 200, 500);
+	camera.position.set(0, 9000, 9000);
 	scene.add(camera);
 
 	controls = new THREE.TyOrbitControls(camera, renderer.domElement);
-	// controls.autoRotate = true;
 	controls.target.set(0, Floor + 60, 0);
-	controls.minDistance = 100;
-	controls.maxDistance = 1500;
-	controls.minPolarAngle = Math.PI * 0.2;
-	controls.maxPolarAngle = Math.PI * 0.48;
 	controls.update();
 
 
@@ -91,14 +88,7 @@ function init() {
 	container.appendChild(stats.dom);
 
 
-	initSky();
-	initGround();
-	initTrees();
-	initSnows();
-	initLight();
-
-	//Load Model
-	// loadModel('assets/models/model.js');
+	initIntor();
 
 
 	// postprocessing
@@ -112,6 +102,50 @@ function init() {
 	TextureEffect.renderToScreen = true;
 	composer.addPass(TextureEffect);
 }
+
+
+function initIntor() {
+	initSky();
+	initSnows();
+	L1 = new TY.Light2(new THREE.IcosahedronGeometry(30, 5));
+	L1.position.set(0, Floor + 100, 0);
+	TY.ThreeContainer.add(L1);
+	L1.scale.set(100, 100, 100);
+
+	controls.addEventListener('yao', intoStage);
+}
+
+function intoStage() {
+	controls.removeEventListener('yao', intoStage);
+	controls.enabled = false;
+	TweenMax.to(L1.scale, 2, {
+		x: .1,
+		y: .1,
+		z: .1,
+		ease: Strong.easeInOut,
+		onComplete: function() {
+			TY.ThreeContainer.remove(L1);
+			L1 = new TY.Light2(new THREE.IcosahedronGeometry(16, 2));
+			L1.position.set(0, Floor + 120, 0);
+			TY.ThreeContainer.add(L1);
+			L1.MoveAble = true;
+
+			initGround();
+		}
+	});
+	controls.moveIn(0, Floor + 200, 600, function() {
+		controls.enabled = true;
+		controls.minDistance = 100;
+		controls.maxDistance = 3000;
+		controls.minPolarAngle = Math.PI * 0.2;
+		controls.maxPolarAngle = Math.PI * 0.48;
+
+		initTrees();
+		//Load Model
+		loadModel('assets/models/model.js');
+	});
+}
+
 
 
 function initSky() {
@@ -129,7 +163,7 @@ function initSky() {
 
 	material.transparent = true;
 	material.opacity = 0;
-	TweenMax.to(material, 2, {
+	TweenMax.to(material, 4, {
 		opacity: 1,
 		onCompleteParams: [material],
 		onComplete: function(_s) {
@@ -144,7 +178,7 @@ function initSky() {
 		transparent: true,
 		fog: false
 	});
-	var fggeometry = new THREE.SphereBufferGeometry(3000, 30, 10).toNonIndexed();
+	var fggeometry = new THREE.SphereBufferGeometry(2500, 30, 10).toNonIndexed();
 	var fgskyBox = new THREE.Mesh(fggeometry, fgmaterial);
 	fgskyBox.position.set(0, 1500, 0);
 	skyBox.add(fgskyBox);
@@ -173,7 +207,6 @@ function initGround() {
 		// ground.receiveShadow = true;
 		TY.ThreeContainer.add(ground);
 
-
 		// MIRROR planes
 		var groundMirror = new THREE.Mirror(1000, 1000, {
 			color: 0x454545,
@@ -181,14 +214,16 @@ function initGround() {
 			textureHeight: 1000
 		});
 		groundMirror.rotateX(-Math.PI / 2);
-		groundMirror.position.set(0, Floor, 0);
 		TY.ThreeContainer.add(groundMirror);
-
+		groundMirror.position.set(0, Floor - 60, 0);
+		TweenMax.to(groundMirror.position, 2, {
+			y: Floor,
+			ease: Strong.easeOut,
+			delay: 1
+		});
 	});
 
 }
-
-
 
 function initTrees() {
 	var texture = new THREE.TextureLoader().load('assets/img/tree.jpg');
@@ -206,23 +241,22 @@ function initTrees() {
 			var _rotation = (Math.random() - 0.5) * 0.2;
 			var geometry = new THREE.CylinderGeometry(2, 20 * _r, 2000 * _r, 10, 4);
 			var object = new THREE.Mesh(geometry, material);
-			object.position.set(_x, 500, _z);
+			object.position.set(_x, -3000, _z);
 			object.rotation.set(_rotation, _rotation, 0);
 			TY.ThreeContainer.add(object);
+
+			TweenMax.to(object.position, 8, {
+				y: 500,
+				ease: Strong.easeInOut,
+				delay: i * 0.06
+			});
 		}
 	}
 }
 
-
 function initSnows() {
 	snows = new TY.Snows();
 	TY.ThreeContainer.add(snows);
-}
-
-function initLight() {
-	L1 = new TY.Light2(new THREE.IcosahedronGeometry(40, 3));
-	L1.position.set(0, Floor+100, 0);
-	scene.add(L1);
 }
 
 
@@ -247,6 +281,35 @@ function loadModel(url) {
 function createModel(geometry) {
 
 	//Material
+	var materialPhongCube = new THREE.MeshPhongMaterial({
+		envMap: cubeCamera.renderTarget.texture,
+		skinning: true
+	});
+
+	//Avatar
+	avatar = new TY.Avatar(geometry, materialPhongCube);
+	avatar.position.set(0, Floor, 0);
+	avatar.scale.set(avatarScale, 0.1, avatarScale);
+	TY.ThreeContainer.add(avatar);
+	avatar.castShadow = true;
+	avatar.receiveShadow = true;
+
+	TweenMax.to(avatar.scale, 2, {
+		y: avatarScale,
+		ease: Strong.easeOut
+	});
+
+	avatar.addEventListener("playAction", function(event) {
+		console.log('event:playAction');
+	});
+
+	controls.addEventListener('yao', showAvatar);
+}
+
+function showAvatar() {
+	controls.removeEventListener('yao', showAvatar);
+
+
 	var mt = new THREE.TextureLoader().load('assets/skins/selfUV.png');
 	var materialTexture = new THREE.MeshLambertMaterial({
 		map: mt,
@@ -259,26 +322,33 @@ function createModel(geometry) {
 		skinning: true
 	});
 
-	var materialPhongCube = new THREE.MeshPhongMaterial({
-		envMap: cubeCamera.renderTarget.texture,
-		skinning: true
+
+	L1.MoveAble = false;
+	TweenMax.to(L1, 1, {
+		_t: 0.001
 	});
+	TweenMax.to(L1.scale, 1, {
+		x: 20,
+		y: 20,
+		z: 20,
+		ease: Strong.easeIn,
+		onComplete: function() {
+			TY.ThreeContainer.remove(L1);
+			avatar.material = materialTexture;
+			avatar.scale.set(avatarScale * 2, avatarScale * 2, avatarScale * 2);
+			TweenMax.to(avatar.scale, 0.6, {
+				x: avatarScale,
+				y: avatarScale,
+				z: avatarScale,
+				ease: Strong.easeOut
+			});
 
-	//Avatar
-	avatar = new TY.Avatar(geometry, materialPhongCube);
-	avatar.position.set(0, Floor, 0);
-	avatar.scale.set(avatarScale, avatarScale, avatarScale);
-	TY.ThreeContainer.add(avatar);
-	avatar.castShadow = true;
-	avatar.receiveShadow = true;
-
-
-	avatar.addEventListener("playAction", function(event) {
-		console.log('event:playAction');
-	})
-	avatar.playAction(avatar.animateClips[1]);
-
-
+			avatar.fadeAction(avatar.animateClips[5], 1);
+			setTimeout(function() {
+				avatar.fadeAction(avatar.animateClips[2], 1);
+			}, 1500)
+		}
+	});
 }
 
 
