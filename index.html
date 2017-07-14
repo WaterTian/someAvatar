@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <title>someAvatar</title>
+        <title>CuAvatar</title>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 	    <meta name="apple-mobile-web-app-capable" content="yes">
@@ -9,7 +9,7 @@
         <style>
             body {
                 font-family: Monospace;
-                background-color: #ffffff;
+                background-color: #000000;
                 margin: 0px;
                 overflow: hidden;
             }
@@ -459,9 +459,65 @@ void main() {
 }
 </script>
 
+<script type="x-shader/x-vertex" id="water_vertexShader">
+void main() {
+  gl_Position = vec4( position, 1.0 );
+}
+</script>
+
+<script type="x-shader/x-vertex" id="water_fragmentShader">
+#ifdef GL_ES
+precision mediump float;
+#endif
+
+uniform vec2 u_resolution;
+uniform vec2 u_mouse;
+uniform float u_time;
+uniform sampler2D u_texture1;
 
 
-        <script src="libs/three.js"></script>
+const float range = 0.3;
+const float noiseQuality = 250.0;
+const float noiseIntensity = 0.001;
+const float offsetIntensity = 0.02;
+const float colorOffsetIntensity = 3.2;
+
+float rand(vec2 co) {
+    return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+}
+
+float verticalBar(float pos, float uvY, float offset) {
+    float edge0 = (pos - range);
+    float edge1 = (pos + range);
+    float x = smoothstep(edge0, pos, uvY) * offset;
+    x -= smoothstep(pos, edge1, uvY) * offset;
+    return x;
+}
+
+void main() {
+    vec2 uv = gl_FragCoord.xy / u_resolution.xy;
+    for (float i = 0.0; i < 0.71; i += 0.1313) {
+        float d = mod(u_time * i, 1.7);
+        float o = sin(1.0 - tan(u_time * 0.24 * i));
+        o *= offsetIntensity;
+        uv.x += verticalBar(d, uv.y, o);
+    }
+    float uvY = uv.y;
+    uvY *= noiseQuality;
+    uvY = float(int(uvY)) * (1.0 / noiseQuality);
+    float noise = rand(vec2(u_time * 0.00001, uvY));
+    uv.x += noise * noiseIntensity;
+    vec2 offsetR = vec2(0.006 * sin(u_time), 0.0) * colorOffsetIntensity;
+    vec2 offsetG = vec2(0.0073 * (cos(u_time * 0.97)), 0.0) * colorOffsetIntensity;
+    float r = texture2D(u_texture1, uv + offsetR).r;
+    float g = texture2D(u_texture1, uv + offsetG).g;
+    float b = texture2D(u_texture1, uv).b;
+    vec4 tex = vec4(r, g, b, 1.0);
+    gl_FragColor = tex;
+}
+</script>
+
+<!--         <script src="libs/three.js"></script>
         <script src="libs/TweenMax.min.js"></script>
         <script src="libs/soundjs-0.6.2.min.js"></script>
         <script src="libs/stats.min.js"></script>
@@ -473,8 +529,8 @@ void main() {
         <script src="src/postprocessing/RenderPass.js"></script>
         <script src="src/postprocessing/ShaderPass.js"></script>
         <script src="src/postprocessing/FilmPass.js"></script>
+        <script src="src/postprocessing/WaterPass.js"></script>
         <script src="src/postprocessing/TexturePass.js"></script>
-
 
         <script src="src/core/TY.js"></script>
         <script src="src/core/utils.js"></script>
@@ -485,17 +541,15 @@ void main() {
         <script src="src/Snows.js"></script>
         <script src="src/Light1.js"></script>
         <script src="src/Light2.js"></script>
-        
-        
         <script src="src/Mirror.js"></script>
         <script src="src/Avatar.js"></script>
-        <script src="src/main.js"></script>
+        <script src="src/main.js"></script> -->
 
-<!--         <script src="./build/libs.min.js"></script>
-        <script src="./build/someAvatar.min.js"></script> -->
+        <script src="./build/libs.min.js"></script>
+        <script src="./build/someAvatar.min.js"></script>
 
 
-<!--         <script src="https://res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>
+        <script src="https://res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>
         <script src='build/jquery-1.9.1.min.js'></script>
         <script>
             var host = encodeURIComponent(window.location.href);
@@ -523,13 +577,13 @@ void main() {
                         'onMenuShareWeibo'
                     ]
                 });
-                var sharePath="http://px.appmagics.cn/hbAvatar/?ADTAG=tx.wx";
-                var shareImg="http://px.appmagics.cn/hbAvatar/assets/img/share.jpg";
+                var sharePath="http://px.appmagics.cn/someAvatar/?ADTAG=tx.wx";
+                var shareImg="http://px.appmagics.cn/someAvatar/assets/img/share.jpg";
 
                 wx.ready(function(){
                     // 分享到朋友圈
                     wx.onMenuShareTimeline({
-                        title: '我是小妖王胡巴', // 分享标题
+                        title: '铜元素星球', // 分享标题
                         link: sharePath, // 分享链接
                         imgUrl: shareImg, // 分享图标
                         success: function () {
@@ -542,8 +596,8 @@ void main() {
                     });
                     //分享给朋友
                     wx.onMenuShareAppMessage({
-                        title: '我是小妖王胡巴', // 分享标题
-                        desc: '小妖王在此,任你调戏', // 分享描述
+                        title: '铜元素星球', // 分享标题
+                        desc: '铜元素星球 你来试试', // 分享描述
                         link: sharePath, // 分享链接
                         imgUrl: shareImg, // 分享图标
                         type: 'link', // 分享类型,music、video或link，不填默认为link
@@ -558,7 +612,7 @@ void main() {
                     });
                 });
             }
-        </script> -->
+        </script>
 
     </body>
 </html>

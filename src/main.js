@@ -4,8 +4,8 @@ var camera, scene, renderer;
 
 var cubeCamera;
 var L1;
+var logo;
 
-var Step = 0;
 
 var avatarScale = 0.6;
 var avatar, skeletonHelper;
@@ -14,6 +14,8 @@ var ground;
 var snows;
 
 var composer;
+var FilmEffect, WaterEffect;
+var effectType = 1;
 
 var clock = new THREE.Clock();
 var start = Date.now();
@@ -53,7 +55,7 @@ function init() {
 
 	renderer.setPixelRatio(window.devicePixelRatio);
 	renderer.setSize(window.innerWidth, window.innerHeight);
-	// renderer.setClearColor(new THREE.Color(0xffffff));
+	renderer.setClearColor(new THREE.Color(0x271137));
 	container.appendChild(renderer.domElement);
 
 	renderer.gammaInput = true;
@@ -68,8 +70,8 @@ function init() {
 	scene.add(cubeCamera);
 
 	///// controls, camera
-	camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 10, 20000);
-	camera.position.set(0, 9000, 9000);
+	camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 10, 40000);
+	camera.position.set(0, 8000, 8000);
 	scene.add(camera);
 
 	controls = new THREE.TyOrbitControls(camera, renderer.domElement);
@@ -84,8 +86,8 @@ function init() {
 	window.addEventListener('resize', onWindowResize, false);
 
 	// STATS
-	stats = new Stats();
-	container.appendChild(stats.dom);
+	// stats = new Stats();
+	// container.appendChild(stats.dom);
 
 
 	intoIntor();
@@ -95,12 +97,44 @@ function init() {
 	composer = new THREE.EffectComposer(renderer);
 	composer.addPass(new THREE.RenderPass(scene, camera));
 
-	var FilmEffect = new THREE.FilmPass();
-	FilmEffect.renderToScreen = true;
+	FilmEffect = new THREE.FilmPass(0.35, 0.0, 2048, false);
 	composer.addPass(FilmEffect);
+	WaterEffect = new THREE.WaterPass();
+	composer.addPass(WaterEffect);
+
 	var TextureEffect = new THREE.TexturePass(new THREE.TextureLoader().load('assets/img/vignette.png'), 0.9);
 	TextureEffect.renderToScreen = true;
 	composer.addPass(TextureEffect);
+
+
+}
+
+function changeEffect() {
+
+	if (effectType == 1) {
+		WaterEffect.renderToScreen = false;
+		FilmEffect.renderToScreen = true;
+
+		FilmEffect.setUniforms(0.35, 0.9, 2048, false);
+	}
+	if (effectType == 2) {
+		WaterEffect.renderToScreen = false;
+		FilmEffect.renderToScreen = true;
+
+		FilmEffect.setUniforms(0.35, 0.0, 648, Math.floor(Math.random() * 2));
+	}
+	if (effectType == 3) {
+		WaterEffect.renderToScreen = true;
+		FilmEffect.renderToScreen = false;
+	}
+
+	effectType++;
+	if (effectType > 3) effectType = 1;
+
+
+	TY.H5Sound.play("l" + Math.floor(Math.random() * 6 + 1), 1);
+
+	controls.moveIn(3, Math.random() * 1000 - 500, Floor + Math.random() * 600, 200 + Math.random() * 1000);
 }
 
 
@@ -110,15 +144,79 @@ function intoIntor() {
 	L1 = new TY.Light2(new THREE.IcosahedronGeometry(30, 5));
 	L1.position.set(0, Floor + 100, 0);
 	TY.ThreeContainer.add(L1);
-	L1.scale.set(100, 100, 100);
+	TweenMax.to(L1.scale, 3, {
+		x: 80,
+		y: 80,
+		z: 80
+	});
 
-	controls.addEventListener('yao', intoStage);
+	var material = new THREE.MeshLambertMaterial({
+		map: new THREE.TextureLoader().load('assets/img/logo.png'),
+		transparent: true,
+		opacity: 0,
+		fog: false,
+		side: THREE.DoubleSide
+	});
+	logo = new THREE.Mesh(new THREE.PlaneGeometry(1600, 1600, 4, 4), material);
+	logo.position.set(0, 1600, 1600);
+	logo.rotation.set(-Math.PI / 4, 0, 0);
+	scene.add(logo);
+	TweenMax.to(material, 2, {
+		opacity: 1,
+		delay: 1
+	});
+
+	var sounds = [{
+		src: TY.baseURL + "assets/sound/bg.mp3",
+		id: "bg"
+	}, {
+		src: TY.baseURL + "assets/sound/intro.mp3",
+		id: "intro"
+	}, {
+		src: TY.baseURL + "assets/sound/intro2.mp3",
+		id: "intro2"
+	}, {
+		src: TY.baseURL + "assets/sound/l1.mp3",
+		id: "l1"
+	}, {
+		src: TY.baseURL + "assets/sound/l2.mp3",
+		id: "l2"
+	}, {
+		src: TY.baseURL + "assets/sound/l3.mp3",
+		id: "l3"
+	}, {
+		src: TY.baseURL + "assets/sound/l4.mp3",
+		id: "l4"
+	}, {
+		src: TY.baseURL + "assets/sound/l5.mp3",
+		id: "l5"
+	}, {
+		src: TY.baseURL + "assets/sound/l6.mp3",
+		id: "l6"
+	}];
+	TY.H5Sound.load(sounds, soundLoadComplete);
+
+	function soundLoadComplete() {
+		console.log("sounds loaded")
+		TY.H5Sound.play("bg", 0);
+
+		if (TY.isMobileDevice()) controls.addEventListener('touchEnd', intoStage);
+		else controls.addEventListener('clickScene', intoStage);
+	}
+
 }
 
+
+
 function intoStage() {
-	controls.removeEventListener('yao', intoStage);
+
+	controls.removeEventListener('touchEnd', intoStage);
+	controls.removeEventListener('clickScene', intoStage);
+
+	TY.H5Sound.play("intro", 1);
+
 	controls.enabled = false;
-	TweenMax.to(L1.scale, 2, {
+	TweenMax.to(L1.scale, 5, {
 		x: .1,
 		y: .1,
 		z: .1,
@@ -133,12 +231,20 @@ function intoStage() {
 			initGround();
 		}
 	});
-	controls.moveIn(0, Floor + 200, 600, function() {
+
+	TweenMax.to(logo.material, 3, {
+		opacity: 0,
+		delay: 3
+	});
+
+	controls.moveIn(9, 0, Floor + 200, 600, function() {
 		controls.enabled = true;
 		controls.minDistance = 100;
-		controls.maxDistance = 3000;
+		controls.maxDistance = 2000;
 		controls.minPolarAngle = Math.PI * 0.2;
 		controls.maxPolarAngle = Math.PI * 0.48;
+
+		logo.material.opacity = 0.8;
 
 		initTrees();
 		//Load Model
@@ -149,39 +255,46 @@ function intoStage() {
 
 
 function initSky() {
-	var texture = new THREE.TextureLoader().load('assets/img/starsmap.jpg');
-	var material = new THREE.MeshBasicMaterial({
-		map: texture,
-		fog: false
+	var texture = new THREE.TextureLoader().load('assets/img/starsmap.jpg', function() {
+		var material = new THREE.MeshBasicMaterial({
+			map: texture,
+			transparent: true,
+			opacity: 0,
+			fog: false
+		});
+
+		var geometry = new THREE.SphereBufferGeometry(5000, 60, 40).toNonIndexed();
+
+		skyBox = new THREE.Mesh(geometry, material);
+		skyBox.applyMatrix(new THREE.Matrix4().makeScale(1, 1, -1));
+		TY.ThreeContainer.add(skyBox);
+
+		TweenMax.to(material, 8, {
+			opacity: 1,
+			onCompleteParams: [material],
+			onComplete: function(_s) {
+				_s.transparent = false;
+			}
+		});
+
+		var fgtexture = new THREE.TextureLoader().load('assets/img/fg.png');
+		fgtexture.repeat.set(1, 1.6);
+		var fgmaterial = new THREE.MeshBasicMaterial({
+			map: fgtexture,
+			transparent: true,
+			opacity: 0,
+			fog: false
+		});
+		var fggeometry = new THREE.SphereBufferGeometry(2200, 30, 10).toNonIndexed();
+		var fgskyBox = new THREE.Mesh(fggeometry, fgmaterial);
+		fgskyBox.position.set(0, 1000, 0);
+		skyBox.add(fgskyBox);
+		TweenMax.to(fgmaterial, 3, {
+			opacity: 1,
+			delay: 2
+		});
+
 	});
-
-	var geometry = new THREE.SphereBufferGeometry(5000, 60, 40).toNonIndexed();
-
-	skyBox = new THREE.Mesh(geometry, material);
-	skyBox.applyMatrix(new THREE.Matrix4().makeScale(1, 1, -1));
-	TY.ThreeContainer.add(skyBox);
-
-	material.transparent = true;
-	material.opacity = 0;
-	TweenMax.to(material, 4, {
-		opacity: 1,
-		onCompleteParams: [material],
-		onComplete: function(_s) {
-			_s.transparent = false;
-		}
-	});
-
-	var fgtexture = new THREE.TextureLoader().load('assets/img/fg.png');
-	fgtexture.repeat.set(1, 1.6);
-	var fgmaterial = new THREE.MeshBasicMaterial({
-		map: fgtexture,
-		transparent: true,
-		fog: false
-	});
-	var fggeometry = new THREE.SphereBufferGeometry(2500, 30, 10).toNonIndexed();
-	var fgskyBox = new THREE.Mesh(fggeometry, fgmaterial);
-	fgskyBox.position.set(0, 1500, 0);
-	skyBox.add(fgskyBox);
 }
 
 
@@ -278,6 +391,7 @@ function loadModel(url) {
 }
 
 
+
 function createModel(geometry) {
 
 	//Material
@@ -300,15 +414,18 @@ function createModel(geometry) {
 	});
 
 	avatar.addEventListener("playAction", function(event) {
-		console.log('event:playAction');
+		// console.log('event:playAction');
 	});
 
-	controls.addEventListener('yao', showAvatar);
+	if (TY.isMobileDevice()) controls.addEventListener('yao', showAvatar);
+	else controls.addEventListener('clickScene', showAvatar);
 }
 
 function showAvatar() {
 	controls.removeEventListener('yao', showAvatar);
+	controls.removeEventListener('clickScene', showAvatar);
 
+	TY.H5Sound.play("intro2", 1);
 
 	var mt = new THREE.TextureLoader().load('assets/skins/selfUV.png');
 	var materialTexture = new THREE.MeshLambertMaterial({
@@ -346,15 +463,37 @@ function showAvatar() {
 			avatar.fadeAction(avatar.animateClips[5], 1);
 			setTimeout(function() {
 				avatar.fadeAction(avatar.animateClips[2], 1);
-			}, 1500)
+			}, 1500);
+
+
+			if (TY.isMobileDevice()) controls.addEventListener('yao', ChangeStyle);
+			else controls.addEventListener('clickScene', ChangeStyle);
 		}
 	});
 }
 
 
+var changeAble = true;
+
+function ChangeStyle() {
+	if (!changeAble) return;
+	changeEffect();
+
+	var _r = Math.floor(Math.random() * 7 + 3);
+	avatar.fadeAction(avatar.animateClips[_r], 0.5);
+	setTimeout(function() {
+		avatar.fadeAction(avatar.animateClips[2], 0.5);
+	}, 1500);
+
+
+	changeAble = false;
+	setTimeout(function() {
+		changeAble = true;
+	}, 2000);
+}
+
 
 function setControlMotions() {
-
 	//touch
 	var TouchAble = true;
 	controls.touchTarget = avatar;
@@ -364,9 +503,6 @@ function setControlMotions() {
 		console.log("touchCallBack");
 
 		removeTip();
-		var _num = Math.floor(Math.random() * 3 + 1);
-		// var _num = 4;
-		TY.H5Sound.play("touch" + (_num + 1), 1);
 
 		switch (_num) {
 			case 1:

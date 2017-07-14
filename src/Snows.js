@@ -25,12 +25,12 @@ TY.Snows = function() {
 	for (i = 0; i < 4; i++) {
 		var sprite = sprites[i];
 		materials[i] = new THREE.PointsMaterial({
-			size: 6,
+			size: 8,
 			map: sprite,
 			blending: THREE.AdditiveBlending,
 			depthTest: false,
 			transparent: true,
-			opacity: 0.6
+			opacity: 0.8
 		});
 		var particles = new THREE.Points(geometry, materials[i]);
 		particles.rotation.x = Math.random() * 6;

@@ -1,9 +1,4 @@
-// This set of controls performs orbiting, dollying (zooming), and panning.
-// Unlike TrackballControls, it maintains the "up" direction object.up (+Y by default).
-//
-//    Orbit - left mouse / touch: one finger move
-//    Zoom - middle mouse, or mousewheel / touch: two finger spread or squish
-//    Pan - right mouse, or arrow keys / touch: three finger swipe
+// WaterTian
 
 THREE.TyOrbitControls = function(object, domElement) {
 
@@ -132,8 +127,8 @@ THREE.TyOrbitControls = function(object, domElement) {
 	};
 
 	//tyadd
-	this.moveIn = function(_x, _y, _z, callback) {
-		TweenMax.to(scope.object.position, 4, {
+	this.moveIn = function(_t, _x, _y, _z, callback) {
+		TweenMax.to(scope.object.position, _t, {
 			x: _x,
 			y: _y,
 			z: _z,
@@ -170,9 +165,8 @@ THREE.TyOrbitControls = function(object, domElement) {
 	this.moveTouchPoint = new THREE.Vector2();
 	//tyadd
 	this.checkTouchTarget = function() {
-		if (scope.touchTargets.length == 0) return;
 
-		if (scope.moveTouchPoint.x < 1 && scope.moveTouchPoint.y < 1) {
+		if (scope.moveTouchPoint.x == 0 && scope.moveTouchPoint.y == 0) {
 			var mouse = new THREE.Vector2();
 			mouse.x = (scope.startTouchPoint.x / window.innerWidth) * 2 - 1;
 			mouse.y = -(scope.startTouchPoint.y / window.innerHeight) * 2 + 1;
@@ -186,6 +180,10 @@ THREE.TyOrbitControls = function(object, domElement) {
 					if (scope.touchTargetCallBack) scope.touchTargetCallBack(scope.touchTargets[i]);
 				}
 			}
+
+			scope.dispatchEvent({
+				type: 'clickScene'
+			});
 		}
 	}
 
@@ -598,6 +596,9 @@ THREE.TyOrbitControls = function(object, domElement) {
 
 		rotateStart.copy(rotateEnd);
 
+		//tyadd
+		scope.moveTouchPoint.copy(rotateDelta);
+
 		scope.update();
 
 	}
@@ -728,6 +729,9 @@ THREE.TyOrbitControls = function(object, domElement) {
 		}
 
 		dollyStart.copy(dollyEnd);
+
+		//tyadd
+		scope.moveTouchPoint.copy(dollyDelta);
 
 		scope.update();
 
@@ -931,6 +935,10 @@ THREE.TyOrbitControls = function(object, domElement) {
 
 		state = STATE.NONE;
 
+		//tyadd
+		scope.dispatchEvent({
+			type: 'touchEnd'
+		});
 	}
 
 	function onContextMenu(event) {
@@ -953,7 +961,7 @@ THREE.TyOrbitControls = function(object, domElement) {
 		scope.screenOrientation = window.orientation || 0;
 	};
 	// tyadd
-	var SHAKE_THRESHOLD = 4000;
+	var SHAKE_THRESHOLD = 2000;
 	var last_update = 0;
 	var x, y, z, last_x = 0,
 		last_y = 0,

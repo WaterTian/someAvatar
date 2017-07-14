@@ -4,9 +4,7 @@ TY.isChrome = /chrome\//i.test(navigator.userAgent);
 TY.isWeixin = /MicroMessenger\//i.test(navigator.userAgent);
 TY.isWeibo = /Weibo/i.test(navigator.userAgent);
 
-TY.isMobileDevice = isMobileDevice;
-
-function isMobileDevice() {
+TY.isMobileDevice = function() {
 	var e = navigator.userAgent.toLowerCase();
 	return !!/(iphone|ios|android|mini|mobile|mobi|nokia|symbian|ipod|ipad|ws\s+phone|mqqbrowser|wp7|wp8|ucbrowser7|ucweb|360\s+aphone\s+browser)/i.test(e)
 }

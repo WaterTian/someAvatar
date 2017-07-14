@@ -14,12 +14,25 @@
 	    "libs/stats.min.js"
 	],
 	"main": [
+		"src/shaders/CopyShader.js",
+		"src/shaders/FilmShader.js",
+		"src/postprocessing/EffectComposer.js",
+		"src/postprocessing/RenderPass.js",
+		"src/postprocessing/ShaderPass.js",
+		"src/postprocessing/FilmPass.js",
+		"src/postprocessing/WaterPass.js",
+		"src/postprocessing/TexturePass.js",
+
 		"src/core/TY.js",
 		"src/core/utils.js",
 		"src/core/EventDispatcher.js",
-	    "src/controls/TYOrbitControls.js",
+	    "src/controls/TyOrbitControls.js",
 	    "src/controls/fastclick.js",
 		"src/H5Sound.js",
+		"src/Snows.js",
+		"src/Light1.js",
+		"src/Light2.js",
+		"src/Mirror.js",
 		"src/Avatar.js",
 		"src/main.js"
 	]
