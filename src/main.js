@@ -86,8 +86,8 @@ function init() {
 	window.addEventListener('resize', onWindowResize, false);
 
 	// STATS
-	// stats = new Stats();
-	// container.appendChild(stats.dom);
+	stats = new Stats();
+	container.appendChild(stats.dom);
 
 
 	intoIntor();
@@ -151,7 +151,7 @@ function intoIntor() {
 	});
 
 	var material = new THREE.MeshLambertMaterial({
-		map: new THREE.TextureLoader().load('assets/img/logo.png'),
+		map: new THREE.TextureLoader().load('assets/img/logo_.png'),
 		transparent: true,
 		opacity: 0,
 		fog: false,
