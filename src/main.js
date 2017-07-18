@@ -4,7 +4,7 @@ var camera, scene, renderer;
 
 var cubeCamera;
 var L1;
-var logo;
+var logo, yao;
 
 
 var avatarScale = 0.6;
@@ -70,7 +70,7 @@ function init() {
 	scene.add(cubeCamera);
 
 	///// controls, camera
-	camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 10, 40000);
+	camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 40000);
 	camera.position.set(0, 8000, 8000);
 	scene.add(camera);
 
@@ -105,6 +105,8 @@ function init() {
 	var TextureEffect = new THREE.TexturePass(new THREE.TextureLoader().load('assets/img/vignette.png'), 0.9);
 	TextureEffect.renderToScreen = true;
 	composer.addPass(TextureEffect);
+
+
 
 
 }
@@ -151,13 +153,13 @@ function intoIntor() {
 	});
 
 	var material = new THREE.MeshLambertMaterial({
-		map: new THREE.TextureLoader().load('assets/img/logo_.png'),
+		map: new THREE.TextureLoader().load('assets/img/logo.png'),
 		transparent: true,
 		opacity: 0,
 		fog: false,
 		side: THREE.DoubleSide
 	});
-	logo = new THREE.Mesh(new THREE.PlaneGeometry(1600, 1600, 4, 4), material);
+	logo = new THREE.Mesh(new THREE.PlaneGeometry(2000, 2000, 4, 4), material);
 	logo.position.set(0, 1600, 1600);
 	logo.rotation.set(-Math.PI / 4, 0, 0);
 	scene.add(logo);
@@ -234,7 +236,7 @@ function intoStage() {
 
 	TweenMax.to(logo.material, 3, {
 		opacity: 0,
-		delay: 3
+		delay: 4
 	});
 
 	controls.moveIn(9, 0, Floor + 200, 600, function() {
@@ -419,6 +421,32 @@ function createModel(geometry) {
 
 	if (TY.isMobileDevice()) controls.addEventListener('yao', showAvatar);
 	else controls.addEventListener('clickScene', showAvatar);
+
+	controls.moveIn(3, 0, Floor + 100, 400);
+	//yao
+	var material = new THREE.SpriteMaterial({
+		map: new THREE.TextureLoader().load('assets/img/yao.png'),
+		// transparent: true,
+		// opacity: 0,
+		fog: false
+	});
+
+	yao = new THREE.Sprite(material);
+	yao.position.set(50, Floor + 150, -50);
+	yao.scale.set(50, 50, 1);
+	TY.ThreeContainer.add(yao);
+
+	yaoLoop();
+	function yaoLoop() {
+		TweenMax.to(material, 0.06, {
+			rotation: -Math.PI / 10,
+			repeat: 7,
+			yoyo: true,
+			delay: 1,
+			onComplete: yaoLoop
+		});
+	}
+
 }
 
 function showAvatar() {
@@ -426,6 +454,7 @@ function showAvatar() {
 	controls.removeEventListener('clickScene', showAvatar);
 
 	TY.H5Sound.play("intro2", 1);
+
 
 	var mt = new THREE.TextureLoader().load('assets/skins/selfUV.png');
 	var materialTexture = new THREE.MeshLambertMaterial({
@@ -468,6 +497,9 @@ function showAvatar() {
 
 			if (TY.isMobileDevice()) controls.addEventListener('yao', ChangeStyle);
 			else controls.addEventListener('clickScene', ChangeStyle);
+
+			FilmEffect.renderToScreen = true;
+			FilmEffect.setUniforms(0.35, 0.9, 2048, false);
 		}
 	});
 }
