@@ -548,11 +548,12 @@ function ChangeStyle() {
 
 	snows.speed = _r * 2;
 
-
 	changeAble = false;
 	setTimeout(function() {
 		changeAble = true;
 	}, 2000);
+
+	MtaH5.clickStat('changeStyle');
 }
 
 
