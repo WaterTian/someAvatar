@@ -1020,6 +1020,7 @@ THREE.TyOrbitControls = function(object, domElement) {
 		});
 	};
 
+
 	//tyadd if touch the  objects of the scene
 	this.touchTargetCallBack = undefined;
 	this.touchTargets = [];
@@ -1824,7 +1825,7 @@ THREE.TyOrbitControls = function(object, domElement) {
 		scope.screenOrientation = window.orientation || 0;
 	};
 	// tyadd
-	var SHAKE_THRESHOLD = 2000;
+	var SHAKE_THRESHOLD = 1000;
 	var last_update = 0;
 	var x, y, z, last_x = 0,
 		last_y = 0,
@@ -2876,6 +2877,9 @@ TY.Snows = function() {
 	THREE.Group.call(this);
 	var scope = this;
 
+	this.speed = 0.3;
+	this.time = 0;
+
 	this.snows = [];
 
 	var textureLoader = new THREE.TextureLoader();
@@ -2886,7 +2890,7 @@ TY.Snows = function() {
 	sprites.push(textureLoader.load("assets/img//sprites/snowflake2.png"));
 	sprites.push(textureLoader.load("assets/img//sprites/snowflake3.png"));
 	sprites.push(textureLoader.load("assets/img//sprites/snowflake4.png"));
-	for (i = 0; i < 2000; i++) {
+	for (i = 0; i < 3000; i++) {
 		var vertex = new THREE.Vector3();
 		vertex.x = Math.random() * 2000 - 1000;
 		vertex.y = Math.random() * 2000 - 1000;
@@ -2901,7 +2905,7 @@ TY.Snows = function() {
 			blending: THREE.AdditiveBlending,
 			depthTest: false,
 			transparent: true,
-			opacity: 0.8
+			opacity: 0.6
 		});
 		var particles = new THREE.Points(geometry, materials[i]);
 		particles.rotation.x = Math.random() * 6;
@@ -2919,10 +2923,13 @@ TY.Snows.prototype = Object.assign(Object.create(THREE.Group.prototype), TY.Even
 	constructor: TY.Snows,
 
 	update: function() {
-		var time = Date.now() * 0.00003;
+		this.time += this.speed * 0.003;
 		for (var i = this.snows.length - 1; i >= 0; i--) {
-			this.snows[i].rotation.y = time * (i < 4 ? i + 1 : -(i + 1));
+			this.snows[i].rotation.y = this.time * (i < 4 ? i + 1 : -(i + 1));
+			this.snows[i].rotation.x = this.time * (i < 4 ? i + 1 : -(i + 1))*0.4;
 		}
+
+		this.speed += (0.1-this.speed)*0.01;
 	}
 });
 /**
@@ -3386,7 +3393,7 @@ var camera, scene, renderer;
 
 var cubeCamera;
 var L1;
-var logo;
+var logo, yao;
 
 
 var avatarScale = 0.6;
@@ -3444,15 +3451,10 @@ function init() {
 	renderer.gammaOutput = true;
 	renderer.shadowMap.enabled = true;
 
-	FastClick.attach(document.body);
-
-	// CUBE CAMERA
-	cubeCamera = new THREE.CubeCamera(1, 10000, 128);
-	cubeCamera.position.set(0, Floor + 160, 0);
-	scene.add(cubeCamera);
+	// FastClick.attach(document.body);
 
 	///// controls, camera
-	camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 10, 40000);
+	camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 40000);
 	camera.position.set(0, 8000, 8000);
 	scene.add(camera);
 
@@ -3464,8 +3466,6 @@ function init() {
 	TY.ThreeContainer = new THREE.Group();
 	scene.add(TY.ThreeContainer);
 
-
-	window.addEventListener('resize', onWindowResize, false);
 
 	// STATS
 	// stats = new Stats();
@@ -3489,34 +3489,45 @@ function init() {
 	composer.addPass(TextureEffect);
 
 
+	window.addEventListener('resize', onWindowResize, false);
 }
 
 function changeEffect() {
 
 	if (effectType == 1) {
-		WaterEffect.renderToScreen = false;
-		FilmEffect.renderToScreen = true;
-
-		FilmEffect.setUniforms(0.35, 0.9, 2048, false);
+		WaterEffect.renderToScreen = true;
+		FilmEffect.renderToScreen = false;
 	}
 	if (effectType == 2) {
 		WaterEffect.renderToScreen = false;
 		FilmEffect.renderToScreen = true;
 
-		FilmEffect.setUniforms(0.35, 0.0, 648, Math.floor(Math.random() * 2));
+		FilmEffect.setUniforms(0.35, 0.99, 2048, true);
 	}
 	if (effectType == 3) {
 		WaterEffect.renderToScreen = true;
 		FilmEffect.renderToScreen = false;
 	}
+	if (effectType == 4) {
+		WaterEffect.renderToScreen = false;
+		FilmEffect.renderToScreen = true;
 
-	effectType++;
-	if (effectType > 3) effectType = 1;
+		FilmEffect.setUniforms(0.35, 0.0, 648, false);
+	}
 
 
 	TY.H5Sound.play("l" + Math.floor(Math.random() * 6 + 1), 1);
 
-	controls.moveIn(3, Math.random() * 1000 - 500, Floor + Math.random() * 600, 200 + Math.random() * 1000);
+
+	if (effectType % 2 == 0) {
+		controls.moveIn(3, Math.random() * 200 - 100, Floor + 100, 400);
+	} else {
+		controls.moveIn(3, Math.random() * 1000 - 500, Math.random() * 600, 400 + Math.random() * 1000);
+	}
+
+
+	effectType++;
+	if (effectType > 4) effectType = 1;
 }
 
 
@@ -3539,7 +3550,7 @@ function intoIntor() {
 		fog: false,
 		side: THREE.DoubleSide
 	});
-	logo = new THREE.Mesh(new THREE.PlaneGeometry(1600, 1600, 4, 4), material);
+	logo = new THREE.Mesh(new THREE.PlaneGeometry(2000, 2000, 4, 4), material);
 	logo.position.set(0, 1600, 1600);
 	logo.rotation.set(-Math.PI / 4, 0, 0);
 	scene.add(logo);
@@ -3582,8 +3593,9 @@ function intoIntor() {
 		console.log("sounds loaded")
 		TY.H5Sound.play("bg", 0);
 
-		if (TY.isMobileDevice()) controls.addEventListener('touchEnd', intoStage);
-		else controls.addEventListener('clickScene', intoStage);
+		controls.addEventListener('touchEnd', intoStage);
+		controls.addEventListener('clickScene', intoStage);
+		controls.addEventListener('yao', intoStage);
 	}
 
 }
@@ -3594,6 +3606,7 @@ function intoStage() {
 
 	controls.removeEventListener('touchEnd', intoStage);
 	controls.removeEventListener('clickScene', intoStage);
+	controls.removeEventListener('yao', intoStage);
 
 	TY.H5Sound.play("intro", 1);
 
@@ -3616,7 +3629,14 @@ function intoStage() {
 
 	TweenMax.to(logo.material, 3, {
 		opacity: 0,
-		delay: 3
+		delay: 4
+	});
+
+	var logo2 = document.getElementById("logo");
+	logo2.style.display = "block";
+	TweenMax.from(logo2, 1, {
+		opacity: 0,
+		delay: 4
 	});
 
 	controls.moveIn(9, 0, Floor + 200, 600, function() {
@@ -3645,7 +3665,7 @@ function initSky() {
 			fog: false
 		});
 
-		var geometry = new THREE.SphereBufferGeometry(5000, 60, 40).toNonIndexed();
+		var geometry = new THREE.SphereBufferGeometry(5000, 30, 20).toNonIndexed();
 
 		skyBox = new THREE.Mesh(geometry, material);
 		skyBox.applyMatrix(new THREE.Matrix4().makeScale(1, 1, -1));
@@ -3776,6 +3796,15 @@ function loadModel(url) {
 
 function createModel(geometry) {
 
+
+	// CUBE CAMERA
+	cubeCamera = new THREE.CubeCamera(1, 10000, 128);
+	cubeCamera.position.set(0, Floor + 100, -50);
+	scene.add(cubeCamera);
+	snows.visible = false;
+	cubeCamera.updateCubeMap(renderer, scene);
+	snows.visible = true;
+
 	//Material
 	var materialPhongCube = new THREE.MeshPhongMaterial({
 		envMap: cubeCamera.renderTarget.texture,
@@ -3801,6 +3830,38 @@ function createModel(geometry) {
 
 	if (TY.isMobileDevice()) controls.addEventListener('yao', showAvatar);
 	else controls.addEventListener('clickScene', showAvatar);
+
+	//yao
+	var material = new THREE.SpriteMaterial({
+		map: new THREE.TextureLoader().load('assets/img/yao.png'),
+		blending: THREE.AdditiveBlending,
+		fog: false
+	});
+
+	yao = new THREE.Sprite(material);
+	yao.position.set(50, Floor + 150, -50);
+	yao.scale.set(40, 40, 1);
+	TY.ThreeContainer.add(yao);
+	TweenMax.from(yao.scale, 1, {
+		x: 1,
+		y: 1,
+		ease: Elastic.easeOut,
+		delay: 2,
+		onComplete: function() {
+			yaoLoop();
+		}
+	});
+
+	function yaoLoop() {
+		TweenMax.to(material, 0.1, {
+			rotation: -Math.PI / 10,
+			repeat: 5,
+			yoyo: true,
+			delay: 1,
+			onComplete: yaoLoop
+		});
+	}
+
 }
 
 function showAvatar() {
@@ -3808,6 +3869,7 @@ function showAvatar() {
 	controls.removeEventListener('clickScene', showAvatar);
 
 	TY.H5Sound.play("intro2", 1);
+
 
 	var mt = new THREE.TextureLoader().load('assets/skins/selfUV.png');
 	var materialTexture = new THREE.MeshLambertMaterial({
@@ -3850,6 +3912,12 @@ function showAvatar() {
 
 			if (TY.isMobileDevice()) controls.addEventListener('yao', ChangeStyle);
 			else controls.addEventListener('clickScene', ChangeStyle);
+
+			snows.speed = 15;
+			FilmEffect.renderToScreen = true;
+			FilmEffect.setUniforms(0.35, 0.0, 648, false);
+
+			controls.moveIn(3, 0, Floor + 100, 400);
 		}
 	});
 }
@@ -3866,6 +3934,8 @@ function ChangeStyle() {
 	setTimeout(function() {
 		avatar.fadeAction(avatar.animateClips[2], 0.5);
 	}, 1500);
+
+	snows.speed = _r * 2;
 
 
 	changeAble = false;
@@ -3919,8 +3989,15 @@ function setControlMotions() {
 function onWindowResize() {
 	camera.aspect = window.innerWidth / window.innerHeight;
 	camera.updateProjectionMatrix();
-
 	renderer.setSize(window.innerWidth, window.innerHeight);
+
+	setTimeout(function() {
+		camera.aspect = window.innerWidth / window.innerHeight;
+		camera.updateProjectionMatrix();
+		renderer.setSize(window.innerWidth, window.innerHeight);
+	}, 1000)
+
+
 }
 
 function animate() {
@@ -3930,13 +4007,16 @@ function animate() {
 	if (stats) stats.update();
 	if (snows) snows.update();
 	if (L1) L1.update();
+
 }
 
 function render() {
 	var delta = clock.getDelta();
-	if (avatar) avatar.update(delta);
 
-	cubeCamera.updateCubeMap(renderer, scene);
+	if (avatar) {
+		avatar.update(delta);
+	}
+
 
 	renderer.render(scene, camera);
 	if (composer) composer.render(delta);

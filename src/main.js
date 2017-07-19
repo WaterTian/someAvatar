@@ -62,7 +62,7 @@ function init() {
 	renderer.gammaOutput = true;
 	renderer.shadowMap.enabled = true;
 
-	FastClick.attach(document.body);
+	// FastClick.attach(document.body);
 
 	///// controls, camera
 	camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 40000);
@@ -78,11 +78,9 @@ function init() {
 	scene.add(TY.ThreeContainer);
 
 
-	window.addEventListener('resize', onWindowResize, false);
-
 	// STATS
-	stats = new Stats();
-	container.appendChild(stats.dom);
+	// stats = new Stats();
+	// container.appendChild(stats.dom);
 
 
 	intoIntor();
@@ -102,7 +100,7 @@ function init() {
 	composer.addPass(TextureEffect);
 
 
-
+	window.addEventListener('resize', onWindowResize, false);
 }
 
 function changeEffect() {
@@ -128,14 +126,19 @@ function changeEffect() {
 		FilmEffect.setUniforms(0.35, 0.0, 648, false);
 	}
 
-	effectType++;
-	if (effectType > 4) effectType = 1;
-
 
 	TY.H5Sound.play("l" + Math.floor(Math.random() * 6 + 1), 1);
 
 
-	controls.moveIn(3, Math.random() * 1000 - 500, Floor + Math.random() * 600, 200 + Math.random() * 1000);
+	if (effectType % 2 == 0) {
+		controls.moveIn(3, Math.random() * 200 - 100, Floor + 100, 400);
+	} else {
+		controls.moveIn(3, Math.random() * 1000 - 500, Math.random() * 600, 400 + Math.random() * 1000);
+	}
+
+
+	effectType++;
+	if (effectType > 4) effectType = 1;
 }
 
 
@@ -201,8 +204,9 @@ function intoIntor() {
 		console.log("sounds loaded")
 		TY.H5Sound.play("bg", 0);
 
-		if (TY.isMobileDevice()) controls.addEventListener('touchEnd', intoStage);
-		else controls.addEventListener('clickScene', intoStage);
+		controls.addEventListener('touchEnd', intoStage);
+		controls.addEventListener('clickScene', intoStage);
+		controls.addEventListener('yao', intoStage);
 	}
 
 }
@@ -213,6 +217,7 @@ function intoStage() {
 
 	controls.removeEventListener('touchEnd', intoStage);
 	controls.removeEventListener('clickScene', intoStage);
+	controls.removeEventListener('yao', intoStage);
 
 	TY.H5Sound.play("intro", 1);
 
@@ -234,6 +239,13 @@ function intoStage() {
 	});
 
 	TweenMax.to(logo.material, 3, {
+		opacity: 0,
+		delay: 4
+	});
+
+	var logo2 = document.getElementById("logo");
+	logo2.style.display = "block";
+	TweenMax.from(logo2, 1, {
 		opacity: 0,
 		delay: 4
 	});
@@ -433,6 +445,7 @@ function createModel(geometry) {
 	//yao
 	var material = new THREE.SpriteMaterial({
 		map: new THREE.TextureLoader().load('assets/img/yao.png'),
+		blending: THREE.AdditiveBlending,
 		fog: false
 	});
 
@@ -587,8 +600,15 @@ function setControlMotions() {
 function onWindowResize() {
 	camera.aspect = window.innerWidth / window.innerHeight;
 	camera.updateProjectionMatrix();
-
 	renderer.setSize(window.innerWidth, window.innerHeight);
+
+	setTimeout(function() {
+		camera.aspect = window.innerWidth / window.innerHeight;
+		camera.updateProjectionMatrix();
+		renderer.setSize(window.innerWidth, window.innerHeight);
+	}, 1000)
+
+
 }
 
 function animate() {
