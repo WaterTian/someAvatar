@@ -64,11 +64,6 @@ function init() {
 
 	FastClick.attach(document.body);
 
-	// CUBE CAMERA
-	cubeCamera = new THREE.CubeCamera(1, 10000, 128);
-	cubeCamera.position.set(0, Floor + 160, 0);
-	scene.add(cubeCamera);
-
 	///// controls, camera
 	camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 40000);
 	camera.position.set(0, 8000, 8000);
@@ -108,33 +103,38 @@ function init() {
 
 
 
-
 }
 
 function changeEffect() {
 
 	if (effectType == 1) {
-		WaterEffect.renderToScreen = false;
-		FilmEffect.renderToScreen = true;
-
-		FilmEffect.setUniforms(0.35, 0.9, 2048, false);
+		WaterEffect.renderToScreen = true;
+		FilmEffect.renderToScreen = false;
 	}
 	if (effectType == 2) {
 		WaterEffect.renderToScreen = false;
 		FilmEffect.renderToScreen = true;
 
-		FilmEffect.setUniforms(0.35, 0.0, 648, Math.floor(Math.random() * 2));
+		FilmEffect.setUniforms(0.35, 0.99, 2048, true);
 	}
 	if (effectType == 3) {
 		WaterEffect.renderToScreen = true;
 		FilmEffect.renderToScreen = false;
 	}
+	if (effectType == 4) {
+		WaterEffect.renderToScreen = false;
+		FilmEffect.renderToScreen = true;
+
+		FilmEffect.setUniforms(0.35, 0.0, 648, false);
+	}
 
 	effectType++;
-	if (effectType > 3) effectType = 1;
+	if (effectType > 4) effectType = 1;
 
 
 	TY.H5Sound.play("l" + Math.floor(Math.random() * 6 + 1), 1);
+
+	snows.speed = 2;
 
 	controls.moveIn(3, Math.random() * 1000 - 500, Floor + Math.random() * 600, 200 + Math.random() * 1000);
 }
@@ -265,7 +265,7 @@ function initSky() {
 			fog: false
 		});
 
-		var geometry = new THREE.SphereBufferGeometry(5000, 60, 40).toNonIndexed();
+		var geometry = new THREE.SphereBufferGeometry(5000, 30, 20).toNonIndexed();
 
 		skyBox = new THREE.Mesh(geometry, material);
 		skyBox.applyMatrix(new THREE.Matrix4().makeScale(1, 1, -1));
@@ -396,6 +396,15 @@ function loadModel(url) {
 
 function createModel(geometry) {
 
+
+	// CUBE CAMERA
+	cubeCamera = new THREE.CubeCamera(1, 10000, 128);
+	cubeCamera.position.set(0, Floor + 100, -50);
+	scene.add(cubeCamera);
+	snows.visible = false;
+	cubeCamera.updateCubeMap(renderer, scene);
+	snows.visible = true;
+
 	//Material
 	var materialPhongCube = new THREE.MeshPhongMaterial({
 		envMap: cubeCamera.renderTarget.texture,
@@ -422,7 +431,6 @@ function createModel(geometry) {
 	if (TY.isMobileDevice()) controls.addEventListener('yao', showAvatar);
 	else controls.addEventListener('clickScene', showAvatar);
 
-	controls.moveIn(3, 0, Floor + 100, 400);
 	//yao
 	var material = new THREE.SpriteMaterial({
 		map: new THREE.TextureLoader().load('assets/img/yao.png'),
@@ -433,14 +441,15 @@ function createModel(geometry) {
 
 	yao = new THREE.Sprite(material);
 	yao.position.set(50, Floor + 150, -50);
-	yao.scale.set(50, 50, 1);
+	yao.scale.set(40, 40, 1);
 	TY.ThreeContainer.add(yao);
 
 	yaoLoop();
+
 	function yaoLoop() {
-		TweenMax.to(material, 0.06, {
+		TweenMax.to(material, 0.1, {
 			rotation: -Math.PI / 10,
-			repeat: 7,
+			repeat: 5,
 			yoyo: true,
 			delay: 1,
 			onComplete: yaoLoop
@@ -498,8 +507,11 @@ function showAvatar() {
 			if (TY.isMobileDevice()) controls.addEventListener('yao', ChangeStyle);
 			else controls.addEventListener('clickScene', ChangeStyle);
 
+			snows.speed = 2;
 			FilmEffect.renderToScreen = true;
-			FilmEffect.setUniforms(0.35, 0.9, 2048, false);
+			FilmEffect.setUniforms(0.35, 0.0, 648, false);
+
+			controls.moveIn(3, 0, Floor + 100, 400);
 		}
 	});
 }
@@ -584,9 +596,11 @@ function animate() {
 
 function render() {
 	var delta = clock.getDelta();
-	if (avatar) avatar.update(delta);
 
-	cubeCamera.updateCubeMap(renderer, scene);
+	if (avatar) {
+		avatar.update(delta);
+	}
+
 
 	renderer.render(scene, camera);
 	if (composer) composer.render(delta);
