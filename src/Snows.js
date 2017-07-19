@@ -51,13 +51,12 @@ TY.Snows.prototype = Object.assign(Object.create(THREE.Group.prototype), TY.Even
 	constructor: TY.Snows,
 
 	update: function() {
-		this.time += this.speed * 0.005;
+		this.time += this.speed * 0.003;
 		for (var i = this.snows.length - 1; i >= 0; i--) {
 			this.snows[i].rotation.y = this.time * (i < 4 ? i + 1 : -(i + 1));
 			this.snows[i].rotation.x = this.time * (i < 4 ? i + 1 : -(i + 1))*0.4;
 		}
 
-		this.speed -= 0.005;
-		if (this.speed < 0.1) this.speed = 0.1;
+		this.speed += (0.1-this.speed)*0.01;
 	}
 });

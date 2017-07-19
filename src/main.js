@@ -134,7 +134,6 @@ function changeEffect() {
 
 	TY.H5Sound.play("l" + Math.floor(Math.random() * 6 + 1), 1);
 
-	snows.speed = 2;
 
 	controls.moveIn(3, Math.random() * 1000 - 500, Floor + Math.random() * 600, 200 + Math.random() * 1000);
 }
@@ -434,8 +433,6 @@ function createModel(geometry) {
 	//yao
 	var material = new THREE.SpriteMaterial({
 		map: new THREE.TextureLoader().load('assets/img/yao.png'),
-		// transparent: true,
-		// opacity: 0,
 		fog: false
 	});
 
@@ -443,8 +440,15 @@ function createModel(geometry) {
 	yao.position.set(50, Floor + 150, -50);
 	yao.scale.set(40, 40, 1);
 	TY.ThreeContainer.add(yao);
-
-	yaoLoop();
+	TweenMax.from(yao.scale, 1, {
+		x: 1,
+		y: 1,
+		ease: Elastic.easeOut,
+		delay: 2,
+		onComplete: function() {
+			yaoLoop();
+		}
+	});
 
 	function yaoLoop() {
 		TweenMax.to(material, 0.1, {
@@ -507,7 +511,7 @@ function showAvatar() {
 			if (TY.isMobileDevice()) controls.addEventListener('yao', ChangeStyle);
 			else controls.addEventListener('clickScene', ChangeStyle);
 
-			snows.speed = 2;
+			snows.speed = 15;
 			FilmEffect.renderToScreen = true;
 			FilmEffect.setUniforms(0.35, 0.0, 648, false);
 
@@ -528,6 +532,8 @@ function ChangeStyle() {
 	setTimeout(function() {
 		avatar.fadeAction(avatar.animateClips[2], 0.5);
 	}, 1500);
+
+	snows.speed = _r * 2;
 
 
 	changeAble = false;
@@ -592,6 +598,7 @@ function animate() {
 	if (stats) stats.update();
 	if (snows) snows.update();
 	if (L1) L1.update();
+
 }
 
 function render() {

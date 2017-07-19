@@ -157,6 +157,7 @@ THREE.TyOrbitControls = function(object, domElement) {
 		});
 	};
 
+
 	//tyadd if touch the  objects of the scene
 	this.touchTargetCallBack = undefined;
 	this.touchTargets = [];
