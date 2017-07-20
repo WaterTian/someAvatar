@@ -33,7 +33,7 @@ TY.Avatar = function(geometry, material) {
 			scope.animateNameList.push(n);
 		};
 	}
-	console.log("animateNameList:" + scope.animateNameList);
+	// console.log("animateNameList:" + scope.animateNameList);
 
 	//Morph   fps=1
 	// console.log("morphTargets:");

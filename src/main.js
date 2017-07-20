@@ -14,7 +14,7 @@ var ground;
 var snows;
 
 var composer;
-var FilmEffect, WaterEffect;
+var FilmEffect, WaterEffect ,InkEffect;
 var effectType = 1;
 
 var clock = new THREE.Clock();
@@ -93,7 +93,9 @@ function init() {
 	FilmEffect = new THREE.FilmPass(0.35, 0.0, 2048, false);
 	composer.addPass(FilmEffect);
 	WaterEffect = new THREE.WaterPass();
-	composer.addPass(WaterEffect);
+	composer.addPass(WaterEffect);	
+	InkEffect = new THREE.InkPass();
+	composer.addPass(InkEffect);
 
 	var TextureEffect = new THREE.TexturePass(new THREE.TextureLoader().load('assets/img/vignette.png'), 0.9);
 	TextureEffect.renderToScreen = true;
@@ -111,21 +113,32 @@ function changeEffect() {
 	}
 	if (effectType == 2) {
 		WaterEffect.renderToScreen = false;
+		FilmEffect.renderToScreen = false;
+		InkEffect.renderToScreen = true;
+	}
+	if (effectType == 3) {
+		WaterEffect.renderToScreen = false;
 		FilmEffect.renderToScreen = true;
+		InkEffect.renderToScreen = false;
 
 		FilmEffect.setUniforms(0.35, 0.99, 2048, true);
 	}
-	if (effectType == 3) {
+	if (effectType == 4) {
 		WaterEffect.renderToScreen = true;
 		FilmEffect.renderToScreen = false;
 	}
-	if (effectType == 4) {
+	if (effectType == 5) {
+		WaterEffect.renderToScreen = false;
+		FilmEffect.renderToScreen = false;
+		InkEffect.renderToScreen = true;
+	}
+	if (effectType == 6) {
 		WaterEffect.renderToScreen = false;
 		FilmEffect.renderToScreen = true;
+		InkEffect.renderToScreen = false;
 
 		FilmEffect.setUniforms(0.35, 0.0, 648, false);
 	}
-
 
 	TY.H5Sound.play("l" + Math.floor(Math.random() * 6 + 1), 1);
 
@@ -138,7 +151,7 @@ function changeEffect() {
 
 
 	effectType++;
-	if (effectType > 4) effectType = 1;
+	if (effectType > 6) effectType = 1;
 }
 
 

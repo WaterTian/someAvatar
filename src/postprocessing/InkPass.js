@@ -11,7 +11,7 @@ THREE.InkPass = function() {
 			value: 0.0
 		},
 		u_resolution: {
-			value: new THREE.Vector2(window.innerWidth, 800)
+			value: new THREE.Vector2(window.innerWidth*window.devicePixelRatio, window.innerHeight*window.devicePixelRatio)
 		},
 		u_mouse: {
 			value: new THREE.Vector2(10, 10)
@@ -21,10 +21,11 @@ THREE.InkPass = function() {
 		}
 	};
 
+
 	this.material = new THREE.ShaderMaterial({
 		uniforms:this.uniforms,
-		vertexShader: document.getElementById('water_vertexShader').textContent,
-		fragmentShader: document.getElementById('water_fragmentShader').textContent
+		vertexShader: document.getElementById('ink_vertexShader').textContent,
+		fragmentShader: document.getElementById('ink_fragmentShader').textContent
 
 	});
 

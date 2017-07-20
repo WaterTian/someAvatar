@@ -21,6 +21,7 @@
 		"src/postprocessing/ShaderPass.js",
 		"src/postprocessing/FilmPass.js",
 		"src/postprocessing/WaterPass.js",
+		"src/postprocessing/InkPass.js",
 		"src/postprocessing/TexturePass.js",
 
 		"src/core/TY.js",
