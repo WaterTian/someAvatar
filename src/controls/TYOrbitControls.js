@@ -962,7 +962,7 @@ THREE.TyOrbitControls = function(object, domElement) {
 		scope.screenOrientation = window.orientation || 0;
 	};
 	// tyadd
-	var SHAKE_THRESHOLD = 1000;
+	var SHAKE_THRESHOLD = 2000;
 	var last_update = 0;
 	var x, y, z, last_x = 0,
 		last_y = 0,

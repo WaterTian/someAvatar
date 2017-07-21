@@ -14,7 +14,7 @@ THREE.WaterPass = function() {
 			value: new THREE.Vector2(window.innerWidth*window.devicePixelRatio, window.innerHeight*window.devicePixelRatio)
 		},
 		u_mouse: {
-			value: new THREE.Vector2(10, 10)
+			value: new THREE.Vector2(0, 0)
 		},
 		u_texture1: {
 			value: null

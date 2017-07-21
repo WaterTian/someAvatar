@@ -6,6 +6,8 @@ var cubeCamera;
 var L1;
 var logo, yao;
 
+var ToneMeter, TonePlayer;
+
 
 var avatarScale = 0.6;
 var avatar, skeletonHelper;
@@ -14,7 +16,8 @@ var ground;
 var snows;
 
 var composer;
-var FilmEffect, WaterEffect ,InkEffect;
+var FilmEffect, WaterEffect, InkEffect;
+var FilmEffectType = 1;
 var effectType = 1;
 
 var clock = new THREE.Clock();
@@ -62,7 +65,7 @@ function init() {
 	renderer.gammaOutput = true;
 	renderer.shadowMap.enabled = true;
 
-	// FastClick.attach(document.body);
+	FastClick.attach(document.body);
 
 	///// controls, camera
 	camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 40000);
@@ -90,10 +93,10 @@ function init() {
 	composer = new THREE.EffectComposer(renderer);
 	composer.addPass(new THREE.RenderPass(scene, camera));
 
-	FilmEffect = new THREE.FilmPass(0.35, 0.0, 2048, false);
+	FilmEffect = new THREE.FilmPass(0.35, 0.0, 1024, 0);
 	composer.addPass(FilmEffect);
 	WaterEffect = new THREE.WaterPass();
-	composer.addPass(WaterEffect);	
+	composer.addPass(WaterEffect);
 	InkEffect = new THREE.InkPass();
 	composer.addPass(InkEffect);
 
@@ -102,43 +105,33 @@ function init() {
 	composer.addPass(TextureEffect);
 
 
+
 	window.addEventListener('resize', onWindowResize, false);
 }
 
 function changeEffect() {
 
+	console.log(effectType)
+
+
 	if (effectType == 1) {
-		WaterEffect.renderToScreen = true;
 		FilmEffect.renderToScreen = false;
+		WaterEffect.renderToScreen = true;
+
 	}
 	if (effectType == 2) {
 		WaterEffect.renderToScreen = false;
-		FilmEffect.renderToScreen = false;
 		InkEffect.renderToScreen = true;
+
 	}
 	if (effectType == 3) {
-		WaterEffect.renderToScreen = false;
-		FilmEffect.renderToScreen = true;
 		InkEffect.renderToScreen = false;
-
-		FilmEffect.setUniforms(0.35, 0.99, 2048, true);
 	}
 	if (effectType == 4) {
-		WaterEffect.renderToScreen = true;
-		FilmEffect.renderToScreen = false;
-	}
-	if (effectType == 5) {
-		WaterEffect.renderToScreen = false;
-		FilmEffect.renderToScreen = false;
-		InkEffect.renderToScreen = true;
-	}
-	if (effectType == 6) {
-		WaterEffect.renderToScreen = false;
 		FilmEffect.renderToScreen = true;
-		InkEffect.renderToScreen = false;
-
-		FilmEffect.setUniforms(0.35, 0.0, 648, false);
+		FilmEffectType = !FilmEffectType;
 	}
+
 
 	TY.H5Sound.play("l" + Math.floor(Math.random() * 6 + 1), 1);
 
@@ -151,14 +144,17 @@ function changeEffect() {
 
 
 	effectType++;
-	if (effectType > 6) effectType = 1;
+	if (effectType > 4) effectType = 1;
 }
 
 
 function intoIntor() {
 	initSky();
 	initSnows();
-	L1 = new TY.Light2(new THREE.IcosahedronGeometry(30, 5));
+
+	if (TY.isAndroid) L1 = new TY.Light2(new THREE.IcosahedronGeometry(30, 3));
+	else L1 = new TY.Light2(new THREE.IcosahedronGeometry(30, 5));
+
 	L1.position.set(0, Floor + 100, 0);
 	TY.ThreeContainer.add(L1);
 	TweenMax.to(L1.scale, 3, {
@@ -213,24 +209,44 @@ function intoIntor() {
 	}];
 	TY.H5Sound.load(sounds, soundLoadComplete);
 
+	//Analyser
+	ToneMeter = new Tone.Meter("level");
+	TonePlayer = new Tone.Player({
+		"url": "./assets/sound/bg.mp3",
+		"loop": true
+	}).fan(ToneMeter).toMaster();
+
 	function soundLoadComplete() {
 		console.log("sounds loaded")
-		TY.H5Sound.play("bg", 0);
+			// TY.H5Sound.play("bg", 0);
 
 		controls.addEventListener('touchEnd', intoStage);
 		controls.addEventListener('clickScene', intoStage);
-		controls.addEventListener('yao', intoStage);
 	}
-
 }
 
+function ToneUpdate() {
+
+	if (FilmEffect.renderToScreen) {
+		if (FilmEffectType) FilmEffect.setUniforms(0.35, ToneMeter.value * 5, 1024, 0);
+		else FilmEffect.setUniforms(0.35, ToneMeter.value, 1024, Math.floor((1 - ToneMeter.value) * 2));
+	}
+
+	if (WaterEffect.uniforms.u_mouse && WaterEffect.renderToScreen) {
+		WaterEffect.uniforms.u_mouse.value = new THREE.Vector2(ToneMeter.value * 10, ToneMeter.value * 0.03);
+	}
+	if (InkEffect.uniforms.u_mouse && InkEffect.renderToScreen) {
+		InkEffect.uniforms.u_mouse.value = new THREE.Vector2(0, (1.2 - ToneMeter.value * 0.8));
+	}
+}
 
 
 function intoStage() {
 
+	TonePlayer.start();
+
 	controls.removeEventListener('touchEnd', intoStage);
 	controls.removeEventListener('clickScene', intoStage);
-	controls.removeEventListener('yao', intoStage);
 
 	TY.H5Sound.play("intro", 1);
 
@@ -539,7 +555,6 @@ function showAvatar() {
 
 			snows.speed = 15;
 			FilmEffect.renderToScreen = true;
-			FilmEffect.setUniforms(0.35, 0.0, 648, false);
 
 			controls.moveIn(3, 0, Floor + 100, 400);
 		}
@@ -632,6 +647,7 @@ function animate() {
 	if (stats) stats.update();
 	if (snows) snows.update();
 	if (L1) L1.update();
+	if (ToneMeter) ToneUpdate();
 
 }
 

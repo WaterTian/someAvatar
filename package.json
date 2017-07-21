@@ -11,7 +11,8 @@
 	    "libs/three.min.js",
 	    "libs/TweenMax.min.js",
 	    "libs/soundjs-0.6.2.min.js",
-	    "libs/stats.min.js"
+	    "libs/stats.min.js",
+	    "libs/Tone.min.js"
 	],
 	"main": [
 		"src/shaders/CopyShader.js",

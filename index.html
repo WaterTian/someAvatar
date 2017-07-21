@@ -480,11 +480,9 @@ uniform float u_time;
 uniform sampler2D u_texture1;
 
 
-const float range = 0.3;
-const float noiseQuality = 250.0;
-const float noiseIntensity = 0.001;
+const float range = 0.2;
+const float noiseQuality = 500.0;
 const float offsetIntensity = 0.02;
-const float colorOffsetIntensity = 3.2;
 
 float rand(vec2 co) {
     return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
@@ -506,6 +504,8 @@ void main() {
         o *= offsetIntensity;
         uv.x += verticalBar(d, uv.y, o);
     }
+    float noiseIntensity = u_mouse.y*0.1;
+    float colorOffsetIntensity = u_mouse.x;
     float uvY = uv.y;
     uvY *= noiseQuality;
     uvY = float(int(uvY)) * (1.0 / noiseQuality);
@@ -564,7 +564,7 @@ void main()
         }
     }
     float g = abs(sumX) + abs(sumY);
-    if(g > 1.0)
+    if(g > u_mouse.y)
         col = vec3(1.0,1.0,1.0);
     else
         col = col * 0.0;
@@ -573,10 +573,12 @@ void main()
 </script>
 
 
+
         <script src="libs/three.js"></script>
         <script src="libs/TweenMax.min.js"></script>
         <script src="libs/soundjs-0.6.2.min.js"></script>
         <script src="libs/stats.min.js"></script>
+        <script src="libs/Tone.min.js"></script>
 
         <script src="src/shaders/CopyShader.js"></script>
         <script src="src/shaders/FilmShader.js"></script>
@@ -603,7 +605,7 @@ void main()
         <script src="src/main.js"></script>
 
 <!--         <script src="./build/libs.min.js"></script>
-        <script src="./build/someAvatar.min-7-20.js"></script> -->
+        <script src="./build/someAvatar.min.js"></script> -->
 
 
         <script>
