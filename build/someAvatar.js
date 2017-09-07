@@ -3726,12 +3726,6 @@ function intoStage() {
 		delay: 4
 	});
 
-	var logo2 = document.getElementById("logo");
-	logo2.style.display = "block";
-	TweenMax.from(logo2, 1, {
-		opacity: 0,
-		delay: 4
-	});
 
 	controls.moveIn(9, 0, Floor + 200, 600, function() {
 		controls.enabled = true;
