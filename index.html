@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <title>appMagics</title>
+        <title>铜元素星球</title>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 	    <meta name="apple-mobile-web-app-capable" content="yes">
@@ -13,13 +13,10 @@
                 margin: 0px;
                 overflow: hidden;
             }
-            #logo{ position:absolute;left:3%;top:2%; width:26%;height:auto;}
         </style>
     </head>
     <body>
-        <div>
-            <img id='logo' src='./assets/img/logo2.png' style='display: none;'>
-        </div> 
+
 
 <script type="x-shader/x-vertex" id="light1_vertexShader">
 vec3 mod289(vec3 x)
@@ -628,7 +625,7 @@ void main()
             $.ajax({
                 type : "get",
                 async:false,
-                url : "http://px.appmagics.cn/TYWxAPI/getSignPackage.php?path="+host,
+                url : "http://www.southint.com/TYWxAPI/getSignPackage.php?path="+host,
                 dataType : "jsonp",
                 success : function(re){
                     wxConfig(re);
@@ -655,7 +652,7 @@ void main()
                 wx.ready(function(){
                     // 分享到朋友圈
                     wx.onMenuShareTimeline({
-                        title: '真正的黑科技与魔法无异', // 分享标题
+                        title: '铜元素星球', // 分享标题
                         link: sharePath, // 分享链接
                         imgUrl: shareImg, // 分享图标
                         success: function () {
@@ -668,8 +665,8 @@ void main()
                     });
                     //分享给朋友
                     wx.onMenuShareAppMessage({
-                        title: 'appMagics', // 分享标题
-                        desc: '真正的黑科技与魔法无异', // 分享描述
+                        title: '铜元素星球', // 分享标题
+                        desc: '铜元素星球 你来试试', // 分享描述
                         link: sharePath, // 分享链接
                         imgUrl: shareImg, // 分享图标
                         type: 'link', // 分享类型,music、video或link，不填默认为link
