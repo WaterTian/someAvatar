@@ -556,7 +556,7 @@ void main() {
             $.ajax({
                 type : "get",
                 async:false,
-                url : "http://px.appmagics.cn/WxAPI/lib/getSignPackage.php?path="+host,
+                url : "http://px.appmagics.cn/TYWxAPI/getSignPackage.php?path="+host,
                 dataType : "jsonp",
                 success : function(re){
                     wxConfig(re);
@@ -577,8 +577,8 @@ void main() {
                         'onMenuShareWeibo'
                     ]
                 });
-                var sharePath="http://px.appmagics.cn/someAvatar/?ADTAG=tx.wx";
-                var shareImg="http://px.appmagics.cn/someAvatar/assets/img/share.jpg";
+                var sharePath="http://www.southint.com/someAvatar/?ADTAG=tx.wx";
+                var shareImg="http://www.southint.com/someAvatar/assets/img/share.jpg";
 
                 wx.ready(function(){
                     // 分享到朋友圈
